@@ -768,13 +768,14 @@ footer {
       linear-gradient(to right, rgba(8,9,8,0.6) 0%, rgba(8,9,8,0.1) 50%, rgba(8,9,8,0.6) 100%) !important;
   }
 
-  /* Hero — Valentin Marinelli ligne 1 / Clément Barbier ligne 2 */
+  /* Hero — Valentin Marinelli & Clément Barbier sur une ligne */
   .hero-title .line { white-space: normal; display: block; }
   .t-amp { display: none; }
-  .hero-name-2 { display: block; }
+  .hero-name-2 { display: inline; }
   .hero-name-2 .t-amp { display: inline; }
   .hero-title { text-align: left; }
-  .t-light, .t-bold { font-size: clamp(1.15rem, 5vw, 1.45rem) !important; }
+  .t-light, .t-bold { font-size: clamp(0.9rem, 4vw, 1.2rem) !important; }
+  .t-amp { font-size: clamp(0.8rem, 3.5vw, 1.1rem) !important; }
 
   /* Section labels */
   .section-tag { font-size: 8px !important; margin-bottom: 1.5rem !important; }
