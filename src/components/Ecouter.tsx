@@ -68,10 +68,10 @@ export default function Ecouter() {
             <div style={{ borderTop: "1px solid var(--line)", marginTop: "0", paddingTop: "2.5rem" }} />
 
             <RevealWrapper delay={500}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "1.5rem" }}>
                 {[
                   {
-                    href: "https://open.spotify.com",
+                    href: "https://open.spotify.com/intl-fr/artist/1tY9ToP9utLYCAFg6uaRd2?si=4sfs8tjqRxWQ5E4DkjO2Sg",
                     label: "Spotify",
                     icon: (
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -80,7 +80,7 @@ export default function Ecouter() {
                     ),
                   },
                   {
-                    href: "https://www.deezer.com",
+                    href: "https://link.deezer.com/s/32VxqTJmSJgvy6QXe6Kbf",
                     label: "Deezer",
                     icon: (
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -89,7 +89,7 @@ export default function Ecouter() {
                     ),
                   },
                   {
-                    href: "https://music.apple.com",
+                    href: "https://music.apple.com/fr/artist/valentin-marinelli/1195845946",
                     label: "Apple Music",
                     icon: (
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -98,8 +98,8 @@ export default function Ecouter() {
                     ),
                   },
                   {
-                    href: "https://www.discogs.com",
-                    label: "Discogs",
+                    href: "https://s.disco.ac/oewhndxuwgwr",
+                    label: "Disco.ac",
                     icon: (
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 4a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
