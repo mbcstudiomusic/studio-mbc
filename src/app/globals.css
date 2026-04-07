@@ -707,6 +707,10 @@ footer {
 /* Hamburger hidden by default (desktop) */
 .nav-hamburger { display: none !important; }
 
+/* Hero — cacher le & de hero-name-2 sur desktop (visible uniquement sur mobile) */
+.hero-name-2 { display: inline; }
+.hero-name-2 .t-amp { display: none; }
+
 /* Tablet (≤1024px) */
 @media (max-width: 1024px) {
   .overlay-panel { grid-template-columns: 200px 1fr; }
