@@ -1,0 +1,617 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import RevealWrapper from "./RevealWrapper";
+import SectionLabel from "./SectionLabel";
+import { type Project } from "@/data/projets";
+
+interface ProjectCardProps {
+  project: Project;
+  onClick: () => void;
+}
+
+function ProjectCard({ project, onClick }: ProjectCardProps) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <div
+      className="carousel-card cursor-pointer"
+      style={{ width: "calc((100vw - 9rem) / 4)", flexShrink: 0, border: "1px solid var(--line)", minWidth: "180px" }}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Poster */}
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          aspectRatio: "16/9",
+          backgroundColor: "#0f110f",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundImage: `url('${project.poster}')`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: hovered ? "brightness(0.45)" : "brightness(0.8)",
+            transition: "filter 0.3s ease",
+          }}
+        />
+
+        {/* Hover: view indicator */}
+        {hovered && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "var(--font-label)",
+                fontSize: "0.55rem",
+                fontWeight: 200,
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: "var(--accent)",
+                fontStyle: "normal",
+              }}
+            >
+              Voir le projet
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Text below poster */}
+      <div style={{ padding: "0.75rem" }}>
+        <p
+          style={{
+            fontFamily: "var(--font-label)",
+            fontSize: "0.55rem",
+            fontWeight: 200,
+            fontStyle: "normal",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            color: "var(--muted)",
+            marginBottom: "0.35rem",
+          }}
+        >
+          {project.type}
+        </p>
+        <p
+          style={{
+            fontFamily: "var(--font-title)",
+            fontWeight: 300,
+            fontSize: "1rem",
+            color: "var(--text)",
+            lineHeight: 1.2,
+            marginBottom: "0.25rem",
+          }}
+        >
+          {project.title}
+        </p>
+        <p
+          style={{
+            fontFamily: "var(--font-label)",
+            fontSize: "0.55rem",
+            fontWeight: 200,
+            fontStyle: "normal",
+            color: "var(--muted)",
+          }}
+        >
+          {project.year}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+interface OverlayProps {
+  project: Project;
+  onClose: () => void;
+  isClosing: boolean;
+}
+
+const labelStyle: React.CSSProperties = {
+  fontFamily: "var(--font-label)",
+  fontSize: "8px",
+  fontWeight: 200,
+  letterSpacing: "0.2em",
+  textTransform: "uppercase" as const,
+  color: "var(--muted)",
+  display: "block",
+  marginBottom: "0.4rem",
+};
+
+const valueStyle: React.CSSProperties = {
+  fontFamily: "var(--font-label)",
+  fontSize: "0.75rem",
+  fontWeight: 200,
+  color: "var(--text)",
+  display: "block",
+  marginBottom: "0.75rem",
+};
+
+const linkBtnStyle: React.CSSProperties = {
+  fontFamily: "var(--font-label)",
+  fontSize: "8px",
+  fontWeight: 200,
+  letterSpacing: "0.18em",
+  textTransform: "uppercase" as const,
+  color: "var(--muted)",
+  textDecoration: "none",
+  border: "1px solid var(--line)",
+  padding: "5px 12px",
+  transition: "color 0.2s, border-color 0.2s",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "0.4rem",
+};
+
+function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
+  const initial = project.title.charAt(0).toUpperCase();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const active = visible && !isClosing;
+
+  return (
+    <div
+      onClick={onClose}
+      className="modal-overlay"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 50,
+        backgroundColor: active ? "rgba(4,6,4,0.88)" : "rgba(4,6,4,0)",
+        backdropFilter: active ? "blur(12px) saturate(1.2)" : "blur(0px) saturate(1)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "2rem 4vw",
+        transition: "background-color 0.45s ease, backdrop-filter 0.45s ease",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="modal-inner"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "260px 1fr",
+          maxWidth: "860px",
+          width: "100%",
+          maxHeight: "92vh",
+          overflow: "hidden",
+          border: "1px solid var(--line)",
+          transform: active ? "scale(1) translateY(0px)" : "scale(0.88) translateY(48px)",
+          opacity: active ? 1 : 0,
+          transition: active
+            ? "transform 0.52s cubic-bezier(0.34, 1.18, 0.64, 1), opacity 0.38s ease"
+            : "transform 0.38s cubic-bezier(0.4, 0, 1, 1), opacity 0.28s ease",
+        }}
+      >
+        {/* ── Left column ── */}
+        <div
+          className="modal-image-col"
+          style={{
+            backgroundColor: "#080908",
+            display: "flex",
+            flexDirection: "column",
+            padding: "1.25rem",
+            overflow: "hidden",
+            minHeight: "400px",
+            gap: "0.75rem",
+          }}
+        >
+          {/* Genre badge */}
+          <span
+            style={{
+              fontFamily: "var(--font-label)",
+              fontSize: "8px",
+              fontWeight: 200,
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              color: "var(--muted)",
+              border: "1px solid var(--line)",
+              padding: "4px 8px",
+              alignSelf: "flex-start",
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            {project.type}
+          </span>
+
+          {/* A4 image (if provided) */}
+          {project.image ? (
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0.75rem",
+                minHeight: 0,
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={project.image}
+                alt={project.title}
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  objectFit: "contain",
+                  border: "1px solid var(--line)",
+                  opacity: 0.9,
+                }}
+              />
+            </div>
+          ) : (
+            /* Watermark initial when no image */
+            <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+              <span
+                style={{
+                  position: "absolute",
+                  bottom: "-1.5rem",
+                  right: "-0.5rem",
+                  fontFamily: "var(--font-title)",
+                  fontWeight: 600,
+                  fontSize: "9rem",
+                  color: "#141814",
+                  lineHeight: 1,
+                  pointerEvents: "none",
+                  userSelect: "none",
+                  textTransform: "uppercase",
+                }}
+              >
+                {initial}
+              </span>
+            </div>
+          )}
+
+          {/* Year */}
+          <span
+            style={{
+              fontFamily: "var(--font-title)",
+              fontWeight: 200,
+              fontSize: "2.5rem",
+              color: "#1e221e",
+              lineHeight: 1,
+            }}
+          >
+            {project.year}
+          </span>
+        </div>
+
+        {/* ── Right column ── */}
+        <div
+          className="modal-right-col"
+          style={{
+            backgroundColor: "var(--surface)",
+            padding: "2rem",
+            position: "relative",
+            overflowY: "auto",
+            maxHeight: "92vh",
+          }}
+        >
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="modal-close-btn"
+            style={{
+              position: "absolute",
+              top: "1.25rem",
+              right: "1.25rem",
+              fontFamily: "var(--font-label)",
+              fontSize: "9px",
+              fontWeight: 200,
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              color: "var(--muted)",
+              background: "none",
+              border: "1px solid var(--line)",
+              padding: "5px 10px",
+              cursor: "pointer",
+              transition: "color 0.2s, border-color 0.2s",
+              zIndex: 10,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "var(--text)";
+              e.currentTarget.style.borderColor = "var(--muted)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "var(--muted)";
+              e.currentTarget.style.borderColor = "var(--line)";
+            }}
+          >
+            Fermer
+          </button>
+
+          {/* Type · Année */}
+          <span style={{ ...labelStyle, marginBottom: "0.5rem" }}>
+            {project.type} · {project.year}
+          </span>
+
+          {/* Titre */}
+          <h2
+            style={{
+              fontFamily: "var(--font-title)",
+              fontWeight: 300,
+              fontSize: "2rem",
+              color: "var(--text)",
+              lineHeight: 1.1,
+              marginBottom: "1.5rem",
+            }}
+          >
+            {project.title}
+          </h2>
+
+          <div style={{ borderTop: "1px solid var(--line)", marginBottom: "1.25rem" }} />
+
+          {/* Synopsis */}
+          <span style={labelStyle}>Synopsis</span>
+          <div
+            className="modal-synopsis"
+            style={{
+              maxHeight: "160px",
+              overflowY: "auto",
+              marginBottom: "1.5rem",
+              paddingRight: "0.5rem",
+            }}
+          >
+            <p
+              style={{
+                fontFamily: "var(--font-body)",
+                fontStyle: "italic",
+                fontSize: "0.85rem",
+                color: "var(--muted)",
+                lineHeight: 1.8,
+              }}
+            >
+              {project.synopsis}
+            </p>
+          </div>
+
+          <div style={{ borderTop: "1px solid var(--line)", marginBottom: "1.25rem" }} />
+
+          {/* Équipe technique */}
+          <span style={{ ...labelStyle, marginBottom: "1rem" }}>Équipe technique</span>
+
+          {project.realisateur && (
+            <>
+              <span style={{ ...labelStyle, fontWeight: 400 }}>Réalisation</span>
+              <span style={valueStyle}>{project.realisateur}</span>
+            </>
+          )}
+
+          {project.production && (
+            <>
+              <span style={{ ...labelStyle, fontWeight: 400 }}>Production</span>
+              <span style={valueStyle}>{project.production}</span>
+            </>
+          )}
+
+          <span style={{ ...labelStyle, fontWeight: 400 }}>Musique</span>
+          <span style={{ ...valueStyle, marginBottom: "1.5rem" }}>Valentin Marinelli &amp; Clément Barbier</span>
+
+          {/* Liens — toujours visibles */}
+          <div style={{ borderTop: "1px solid var(--line)", marginBottom: "1.25rem" }} />
+          <span style={{ ...labelStyle, marginBottom: "0.75rem" }}>Liens</span>
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            {project.trailer ? (
+              <a
+                href={project.trailer}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={linkBtnStyle}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
+                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)";
+                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--line)";
+                }}
+              >
+                ↗ Bande-annonce
+              </a>
+            ) : (
+              <span style={{ ...linkBtnStyle, opacity: 0.3, cursor: "default" }}>↗ Bande-annonce</span>
+            )}
+            {project.imdb ? (
+              <a
+                href={project.imdb}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={linkBtnStyle}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
+                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)";
+                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--line)";
+                }}
+              >
+                ↗ IMDb
+              </a>
+            ) : (
+              <span style={{ ...linkBtnStyle, opacity: 0.3, cursor: "default" }}>↗ IMDb</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Projets({ projects }: { projects: Project[] }) {
+  const [selected, setSelected] = useState<Project | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  function updateScrollState() {
+    const el = carouselRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 8);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 8);
+  }
+
+  function scrollBy(dir: 1 | -1) {
+    const el = carouselRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * (el.clientWidth * 0.75), behavior: "smooth" });
+  }
+
+  function openProject(project: Project) {
+    sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setIsClosing(false);
+    setSelected(project);
+    window.history.pushState(null, "", `/projets/${project.slug}`);
+  }
+
+  function closeProject() {
+    setIsClosing(true);
+    setTimeout(() => {
+      setSelected(null);
+      setIsClosing(false);
+      window.history.pushState(null, "", "/#projets");
+    }, 400);
+  }
+
+  useEffect(() => {
+    function onPopState() {
+      closeProject();
+    }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  return (
+    <section
+      ref={sectionRef}
+      id="projets"
+      className="py-24"
+      style={{
+        backgroundColor: "var(--surface)",
+        borderTop: "1px solid var(--line)",
+      }}
+    >
+      {/* Header + flèches */}
+      <div style={{ padding: "0 4vw", marginBottom: "2.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <RevealWrapper delay={0}>
+          <SectionLabel label="03 — projets" />
+        </RevealWrapper>
+
+        <RevealWrapper delay={80}>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            {/* Flèche gauche */}
+            <button
+              onClick={() => scrollBy(-1)}
+              disabled={!canScrollLeft}
+              style={{
+                width: "36px",
+                height: "36px",
+                border: "1px solid var(--line)",
+                background: "transparent",
+                cursor: canScrollLeft ? "pointer" : "default",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: canScrollLeft ? 1 : 0.25,
+                transition: "opacity 0.3s ease, border-color 0.2s ease",
+              }}
+              onMouseEnter={(e) => { if (canScrollLeft) e.currentTarget.style.borderColor = "var(--muted)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--line)"; }}
+            >
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none" stroke="var(--muted)" strokeWidth="1">
+                <polyline points="5,1 1,5 5,9" />
+                <line x1="1" y1="5" x2="11" y2="5" />
+              </svg>
+            </button>
+
+            {/* Flèche droite */}
+            <button
+              onClick={() => scrollBy(1)}
+              disabled={!canScrollRight}
+              style={{
+                width: "36px",
+                height: "36px",
+                border: "1px solid var(--line)",
+                background: "transparent",
+                cursor: canScrollRight ? "pointer" : "default",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: canScrollRight ? 1 : 0.25,
+                transition: "opacity 0.3s ease, border-color 0.2s ease",
+              }}
+              onMouseEnter={(e) => { if (canScrollRight) e.currentTarget.style.borderColor = "var(--muted)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--line)"; }}
+            >
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none" stroke="var(--muted)" strokeWidth="1">
+                <polyline points="7,1 11,5 7,9" />
+                <line x1="11" y1="5" x2="1" y2="5" />
+              </svg>
+            </button>
+          </div>
+        </RevealWrapper>
+      </div>
+
+      {/* Carousel + fondus latéraux */}
+      <RevealWrapper delay={160} className="w-full">
+        <div style={{ position: "relative" }}>
+          {/* Fondu gauche */}
+          <div style={{
+            position: "absolute", left: 0, top: 0, bottom: 0, width: "4vw", zIndex: 1, pointerEvents: "none",
+            background: "linear-gradient(to right, var(--surface), transparent)",
+            opacity: canScrollLeft ? 1 : 0, transition: "opacity 0.3s ease",
+          }} />
+          {/* Fondu droite */}
+          <div style={{
+            position: "absolute", right: 0, top: 0, bottom: 0, width: "6vw", zIndex: 1, pointerEvents: "none",
+            background: "linear-gradient(to left, var(--surface), transparent)",
+            opacity: canScrollRight ? 1 : 0, transition: "opacity 0.3s ease",
+          }} />
+
+          <div
+            ref={carouselRef}
+            className="carousel-track"
+            style={{ padding: "0 4vw" }}
+            onScroll={updateScrollState}
+          >
+            {projects.map((project) => (
+              <ProjectCard
+                key={`${project.title}-${project.year}`}
+                project={project}
+                onClick={() => openProject(project)}
+              />
+            ))}
+          </div>
+        </div>
+      </RevealWrapper>
+
+      {/* Overlay */}
+      {selected && (
+        <ProjectOverlay project={selected} onClose={closeProject} isClosing={isClosing} />
+      )}
+    </section>
+  );
+}
