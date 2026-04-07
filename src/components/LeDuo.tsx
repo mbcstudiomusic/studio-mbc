@@ -69,7 +69,7 @@ export default function LeDuo() {
 
         {/* Valentin */}
         <RevealWrapper delay={160}>
-          <div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             {/* Photo A4 centrée */}
             <div className="duo-photo-wrap">
               <div
@@ -87,13 +87,13 @@ export default function LeDuo() {
             </div>
 
             {/* Nom */}
-            <div style={{ marginBottom: "0.5rem", fontFamily: "'Cormorant Garamond', serif", display: "flex", alignItems: "baseline", gap: "0.4em", flexWrap: "wrap" }}>
+            <div style={{ marginBottom: "0.5rem", fontFamily: "'Cormorant Garamond', serif", display: "flex", alignItems: "baseline", gap: "0.4em", flexWrap: "wrap", justifyContent: "center" }}>
               <span className="duo-firstname" style={{ fontWeight: 300, fontSize: "1.2rem", color: "var(--muted)" }}>Valentin</span>
               <span className="duo-lastname" style={{ fontWeight: 700, fontSize: "1.6rem", color: "var(--text)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Marinelli</span>
             </div>
 
             {/* Réseaux */}
-            <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.75rem" }}>
+            <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.75rem", justifyContent: "center" }}>
               {socialLink("https://www.instagram.com/valval13/", "Instagram Valentin", <InstagramIcon />)}
               {socialLink("https://fr.linkedin.com/in/valentin-marinelli", "LinkedIn Valentin", <LinkedInIcon />)}
               {socialLink("https://www.imdb.com/fr/name/nm8016007/", "IMDb Valentin", <ImdbIcon />)}
@@ -107,7 +107,7 @@ export default function LeDuo() {
 
         {/* Clément */}
         <RevealWrapper delay={240}>
-          <div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             {/* Photo A4 centrée */}
             <div className="duo-photo-wrap">
               <div
@@ -125,13 +125,13 @@ export default function LeDuo() {
             </div>
 
             {/* Nom */}
-            <div style={{ marginBottom: "0.5rem", fontFamily: "'Cormorant Garamond', serif", display: "flex", alignItems: "baseline", gap: "0.4em", flexWrap: "wrap" }}>
+            <div style={{ marginBottom: "0.5rem", fontFamily: "'Cormorant Garamond', serif", display: "flex", alignItems: "baseline", gap: "0.4em", flexWrap: "wrap", justifyContent: "center" }}>
               <span className="duo-firstname" style={{ fontWeight: 300, fontSize: "1.2rem", color: "var(--muted)" }}>Clément</span>
               <span className="duo-lastname" style={{ fontWeight: 700, fontSize: "1.6rem", color: "var(--text)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Barbier</span>
             </div>
 
             {/* Réseaux */}
-            <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.75rem" }}>
+            <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.75rem", justifyContent: "center" }}>
               {socialLink("https://www.instagram.com/clem_barb_/", "Instagram Clément", <InstagramIcon />)}
               {socialLink("https://fr.linkedin.com/in/cl%C3%A9ment-barbier-b0022359", "LinkedIn Clément", <LinkedInIcon />)}
               {socialLink("https://www.imdb.com/fr/name/nm8667331/", "IMDb Clément", <ImdbIcon />)}
