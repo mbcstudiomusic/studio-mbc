@@ -424,7 +424,6 @@ export default function Approche() {
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
                       <path d="M0 0h4v1.5H1.5V4H0V0zm6 0h4v4H8.5V1.5H6V0zM0 6h1.5v2.5H4V10H0V6zm8.5 2.5H6V10h4V6H8.5v2.5z"/>
                     </svg>
-                    Cinéma
                   </button>
                 )}
 
@@ -643,9 +642,13 @@ export default function Approche() {
             Fermer
           </button>
 
-          {/* Video */}
+          {/* Video — s'adapte portrait ET paysage */}
           <div
-            style={{ position: "relative", width: "100%", paddingBottom: "56.25%" }}
+            style={{
+              position: "relative",
+              width: "min(100vw, calc(100vh * 16 / 9))",
+              height: "min(100vh, calc(100vw * 9 / 16))",
+            }}
             onTouchStart={showScrubberBriefly}
           >
             <iframe
