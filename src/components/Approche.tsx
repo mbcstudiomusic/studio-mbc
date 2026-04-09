@@ -21,6 +21,7 @@ export default function Approche() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const suppressScroll = useRef(false);
   const scrubberTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const playingRef = useRef(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768);
@@ -47,11 +48,16 @@ export default function Approche() {
     );
   }
 
-  // Écouter les événements Vimeo (timeupdate, duration)
+  // Écouter les événements Vimeo
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       try {
         const data = JSON.parse(typeof e.data === "string" ? e.data : "{}");
+        // Vimeo est prêt : s'abonner à timeupdate (et relancer si nécessaire)
+        if (data.event === "ready") {
+          vimeoMessage("addEventListener", "timeupdate");
+          if (playingRef.current) vimeoMessage("play");
+        }
         if (data.event === "timeupdate" && data.data) {
           setCurrentTime(data.data.seconds ?? 0);
           if (data.data.duration) setDuration(data.data.duration);
@@ -62,10 +68,10 @@ export default function Approche() {
     return () => window.removeEventListener("message", handler);
   }, []);
 
-  // S'abonner à timeupdate dès que la vidéo est lancée
+  // Abonnement de secours si ready est déjà passé
   useEffect(() => {
     if (!playing) return;
-    const t = setTimeout(() => vimeoMessage("addEventListener", "timeupdate"), 600);
+    const t = setTimeout(() => vimeoMessage("addEventListener", "timeupdate"), 800);
     return () => clearTimeout(t);
   }, [playing]);
 
@@ -96,6 +102,7 @@ export default function Approche() {
       window.scrollTo({ top: targetScroll, behavior: "smooth" });
     }
 
+    playingRef.current = true;
     setPlaying(true);
     setPaused(false);
     if (!isMobile) setTimeout(() => setExpanded(true), 20);
@@ -117,12 +124,14 @@ export default function Approche() {
 
   function handleCollapse() {
     vimeoMessage("pause");
+    playingRef.current = false;
     setIsCollapsing(true);
     setExpanded(false);
     setPaused(false);
     setTimeout(() => {
       setPlaying(false);
       setIsCollapsing(false);
+      setCurrentTime(0);
     }, 950);
   }
 
@@ -353,18 +362,20 @@ export default function Approche() {
                       pointerEvents: scrubberVisible ? "auto" : "none",
                       cursor: "pointer",
                     }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!duration) return;
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const frac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-                      const seekTo = frac * duration;
-                      vimeoMessage("setCurrentTime", seekTo);
-                      setCurrentTime(seekTo);
-                    }}
                   >
-                    {/* Track */}
-                    <div style={{ position: "relative", width: "100%", height: "3px", background: "rgba(255,255,255,0.2)", borderRadius: "2px" }}>
+                    {/* Track — le click est ici pour un calcul de position exact */}
+                    <div
+                      style={{ position: "relative", width: "100%", height: "3px", background: "rgba(255,255,255,0.2)", borderRadius: "2px", cursor: "pointer" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!duration) return;
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const frac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                        const seekTo = frac * duration;
+                        vimeoMessage("setCurrentTime", seekTo);
+                        setCurrentTime(seekTo);
+                      }}
+                    >
                       {/* Progrès */}
                       <div style={{
                         width: `${duration ? (currentTime / duration) * 100 : 0}%`,
