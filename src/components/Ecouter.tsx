@@ -68,7 +68,7 @@ export default function Ecouter() {
             <div style={{ borderTop: "1px solid var(--line)", marginTop: "0", paddingTop: "2.5rem" }} />
 
             <RevealWrapper delay={500}>
-              <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "1.5rem" }}>
+              <div className="streaming-links" style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "1.5rem" }}>
                 {[
                   {
                     href: "https://open.spotify.com/intl-fr/artist/1tY9ToP9utLYCAFg6uaRd2?si=4sfs8tjqRxWQ5E4DkjO2Sg",

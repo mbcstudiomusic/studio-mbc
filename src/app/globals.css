@@ -727,10 +727,10 @@ footer {
 
   /* Sections */
   section { padding: 3.5rem 5vw !important; }
-  #hero { padding: 0 5vw 14vh !important; }
+  #hero { padding: 0 5vw 4vh !important; }
 
   /* Hero */
-  .hero-eyebrow { font-size: 8px !important; margin-bottom: 1.2rem !important; }
+  .hero-eyebrow { font-size: 8px !important; margin-bottom: 8rem !important; }
   .hero-title .line { white-space: normal; }
   .t-light, .t-bold { font-size: clamp(1.5rem, 7.5vw, 2rem) !important; }
   .t-amp { font-size: clamp(1.3rem, 6.5vw, 1.8rem) !important; }
@@ -743,11 +743,11 @@ footer {
   /* Justification globale */
   p, .font-lora { text-align: justify !important; }
 
-  /* Nav logo — une ligne */
-  #nav a[href="#hero"] { font-size: 0.68rem !important; white-space: nowrap; }
+  /* Nav logo — une ligne, légèrement agrandi */
+  #nav a[href="#hero"] { font-size: 0.82rem !important; white-space: nowrap; }
 
-  /* Hamburger menu — liens plus petits */
-  .mobile-menu-link { font-size: clamp(1.2rem, 6vw, 1.6rem) !important; }
+  /* Hamburger menu — liens plus petits + majuscules */
+  .mobile-menu-link { font-size: clamp(1.2rem, 6vw, 1.6rem) !important; text-transform: uppercase !important; }
 
   /* Le Duo — noms sur une ligne */
   .duo-firstname { font-size: 0.85rem !important; }
@@ -782,6 +782,7 @@ footer {
 
   /* Écouter — single column, compact */
   .ecouter-grid { grid-template-columns: 1fr !important; }
+  .streaming-links { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 1rem !important; }
   .ecouter-track { padding: 0.9rem 0 !important; }
   .ecouter-num { display: none !important; }
   .ecouter-title { font-size: 1rem !important; }
