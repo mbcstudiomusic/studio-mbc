@@ -186,8 +186,12 @@ export default function Approche() {
 
     playingRef.current = true;
     setPlaying(true);
-    setIframeKey(k => k + 1);
     setPaused(false);
+    // Envoyer play SYNCHRONEMENT dans le handler (user gesture encore actif sur iOS Safari)
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ method: "play" }),
+      "*"
+    );
     if (!isMobile) setTimeout(() => setExpanded(true), 20);
     setTimeout(() => { suppressScroll.current = false; }, 1600);
   }
@@ -238,7 +242,7 @@ export default function Approche() {
     scrubberTimeout.current = setTimeout(() => setScrubberVisible(false), 3000);
   }
 
-  const videoSrc = playing ? VIMEO_BASE + "&autoplay=1" : VIMEO_BASE;
+  const videoSrc = VIMEO_BASE; // pas d'autoplay dans l'URL, contrôlé via postMessage play
   const cinemaSrc =
     VIMEO_BASE + "&autoplay=1" + (currentTime > 1 ? `&t=${Math.floor(currentTime)}` : "");
 
