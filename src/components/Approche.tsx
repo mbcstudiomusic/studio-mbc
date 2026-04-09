@@ -15,6 +15,7 @@ export default function Approche() {
   const [isMobile, setIsMobile] = useState(false);
   const [mobileCinema, setMobileCinema] = useState(false);
   const [cinemaVisible, setCinemaVisible] = useState(false);
+  const [iframeKey, setIframeKey] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [scrubberVisible, setScrubberVisible] = useState(false);
@@ -58,7 +59,6 @@ export default function Approche() {
         // Vimeo est prêt : s'abonner à timeupdate (et relancer si nécessaire)
         if (data.event === "ready") {
           vimeoMessage("addEventListener", "timeupdate");
-          if (playingRef.current) vimeoMessage("play");
         }
         if (data.event === "timeupdate" && data.data) {
           setCurrentTime(data.data.seconds ?? 0);
@@ -140,10 +140,9 @@ export default function Approche() {
 
     playingRef.current = true;
     setPlaying(true);
+    setIframeKey(k => k + 1); // Remont l'iframe avec autoplay=1 dans le contexte du click
     setPaused(false);
     if (!isMobile) setTimeout(() => setExpanded(true), 20);
-    // Déclencher la lecture via postMessage (respecte le geste utilisateur sur mobile)
-    vimeoMessage("play");
     setTimeout(() => { suppressScroll.current = false; }, 1600);
   }
 
@@ -171,7 +170,7 @@ export default function Approche() {
     }, 950);
   }
 
-  const videoSrc = VIMEO_BASE;
+  const videoSrc = playing ? VIMEO_BASE + "&autoplay=1" : VIMEO_BASE;
 
   return (
     <section
@@ -181,7 +180,7 @@ export default function Approche() {
       style={{
         backgroundColor: "var(--surface)",
         borderTop: "1px solid var(--line)",
-        overflow: "hidden",
+        overflow: mobileCinema ? "visible" : "hidden",
         cursor: "default",
       }}
       onClick={expanded ? handleCollapse : undefined}
@@ -303,6 +302,7 @@ export default function Approche() {
                 }}
               >
                 <iframe
+                  key={iframeKey}
                   ref={iframeRef}
                   src={videoSrc}
                   style={{
