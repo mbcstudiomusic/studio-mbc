@@ -13,10 +13,14 @@ export default function Approche() {
   const [paused, setPaused] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [scrubberVisible, setScrubberVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const suppressScroll = useRef(false);
+  const scrubberTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768);
@@ -36,12 +40,34 @@ export default function Approche() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [expanded]);
 
-  function vimeoMessage(method: string) {
+  function vimeoMessage(method: string, value?: unknown) {
     iframeRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ method }),
+      JSON.stringify(value !== undefined ? { method, value } : { method }),
       "*"
     );
   }
+
+  // Écouter les événements Vimeo (timeupdate, duration)
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      try {
+        const data = JSON.parse(typeof e.data === "string" ? e.data : "{}");
+        if (data.event === "timeupdate" && data.data) {
+          setCurrentTime(data.data.seconds ?? 0);
+          if (data.data.duration) setDuration(data.data.duration);
+        }
+      } catch { /* ignore */ }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
+
+  // S'abonner à timeupdate dès que la vidéo est lancée
+  useEffect(() => {
+    if (!playing) return;
+    const t = setTimeout(() => vimeoMessage("addEventListener", "timeupdate"), 600);
+    return () => clearTimeout(t);
+  }, [playing]);
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     if (expanded || isMobile) return;
@@ -136,7 +162,14 @@ export default function Approche() {
             <RevealWrapper delay={0}>
               <div
                 onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
+                onMouseEnter={() => playing && setScrubberVisible(true)}
+                onMouseLeave={(e) => { handleMouseLeave(); setScrubberVisible(false); }}
+                onTouchStart={() => {
+                  if (!playing) return;
+                  setScrubberVisible(true);
+                  if (scrubberTimeout.current) clearTimeout(scrubberTimeout.current);
+                  scrubberTimeout.current = setTimeout(() => setScrubberVisible(false), 3000);
+                }}
                 style={{
                   position: "relative",
                   width: "100%",
@@ -295,6 +328,61 @@ export default function Approche() {
                           <rect x="7" y="0" width="3" height="14" rx="0.5" />
                         </svg>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Barre de lecture */}
+                {playing && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: "36px",
+                      zIndex: 6,
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "0 14px",
+                      background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)",
+                      opacity: scrubberVisible ? 1 : 0,
+                      transition: "opacity 0.3s ease",
+                      pointerEvents: scrubberVisible ? "auto" : "none",
+                      cursor: "pointer",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!duration) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const frac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                      const seekTo = frac * duration;
+                      vimeoMessage("setCurrentTime", seekTo);
+                      setCurrentTime(seekTo);
+                    }}
+                  >
+                    {/* Track */}
+                    <div style={{ position: "relative", width: "100%", height: "3px", background: "rgba(255,255,255,0.2)", borderRadius: "2px" }}>
+                      {/* Progrès */}
+                      <div style={{
+                        width: `${duration ? (currentTime / duration) * 100 : 0}%`,
+                        height: "100%",
+                        background: "var(--accent)",
+                        borderRadius: "2px",
+                        pointerEvents: "none",
+                      }} />
+                      {/* Curseur */}
+                      <div style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: `${duration ? (currentTime / duration) * 100 : 0}%`,
+                        transform: "translate(-50%, -50%)",
+                        width: "9px",
+                        height: "9px",
+                        borderRadius: "50%",
+                        background: "var(--accent)",
+                        pointerEvents: "none",
+                      }} />
                     </div>
                   </div>
                 )}
