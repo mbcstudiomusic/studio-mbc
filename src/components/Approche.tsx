@@ -99,6 +99,8 @@ export default function Approche() {
     setPlaying(true);
     setPaused(false);
     if (!isMobile) setTimeout(() => setExpanded(true), 20);
+    // Déclencher la lecture via postMessage (respecte le geste utilisateur sur mobile)
+    vimeoMessage("play");
     setTimeout(() => { suppressScroll.current = false; }, 1600);
   }
 
@@ -124,7 +126,7 @@ export default function Approche() {
     }, 950);
   }
 
-  const videoSrc = playing ? VIMEO_BASE + "&autoplay=1" : VIMEO_BASE;
+  const videoSrc = VIMEO_BASE;
 
   return (
     <section
