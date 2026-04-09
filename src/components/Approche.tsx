@@ -211,6 +211,40 @@ export default function Approche() {
                   </span>
                 </div>
 
+                {/* Bouton Fermer — desktop uniquement, vidéo en plein écran */}
+                {expanded && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleCollapse(); }}
+                    style={{
+                      position: "absolute",
+                      top: "1.25rem",
+                      right: "1.25rem",
+                      fontFamily: "var(--font-label)",
+                      fontSize: "9px",
+                      fontWeight: 200,
+                      letterSpacing: "0.15em",
+                      textTransform: "uppercase",
+                      color: "var(--muted)",
+                      background: "none",
+                      border: "1px solid var(--line)",
+                      padding: "5px 10px",
+                      cursor: "pointer",
+                      transition: "color 0.2s, border-color 0.2s",
+                      zIndex: 10,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "var(--text)";
+                      e.currentTarget.style.borderColor = "var(--muted)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "var(--muted)";
+                      e.currentTarget.style.borderColor = "var(--line)";
+                    }}
+                  >
+                    Fermer
+                  </button>
+                )}
+
                 {/* Overlay pause/play — visible quand la vidéo est lancée */}
                 {(expanded || (playing && isMobile)) && (
                   <div
