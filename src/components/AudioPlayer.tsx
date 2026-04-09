@@ -194,20 +194,11 @@ export default function AudioPlayer({ index, title, subtitle, src, isActive, onP
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const audio = audioRef.current;
     const canvas = canvasRef.current;
-    if (!audio) return;
-    if (isPlaying) {
-      audio.pause();
-      setIsPlaying(false);
-      return;
-    }
-    if (!canvas || !audio.duration) return;
+    if (!audio || !canvas || !audio.duration) return;
     const rect = canvas.getBoundingClientRect();
     const frac = (e.clientX - rect.left) / rect.width;
     audio.currentTime = frac * audio.duration;
     setProgress(frac);
-    onPlay();
-    audio.play().catch(() => {});
-    setIsPlaying(true);
   };
 
   const formatTime = (s: number) => {

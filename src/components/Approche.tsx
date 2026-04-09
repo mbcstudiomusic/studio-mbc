@@ -212,7 +212,7 @@ export default function Approche() {
                 </div>
 
                 {/* Overlay pause/play — visible quand la vidéo est lancée */}
-                {expanded && (
+                {(expanded || (playing && isMobile)) && (
                   <div
                     onClick={handlePauseToggle}
                     style={{
