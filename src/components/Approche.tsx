@@ -14,6 +14,7 @@ export default function Approche() {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
   const [mobileCinema, setMobileCinema] = useState(false);
+  const [cinemaVisible, setCinemaVisible] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [scrubberVisible, setScrubberVisible] = useState(false);
@@ -79,29 +80,34 @@ export default function Approche() {
   function handleCinemaEnter() {
     setMobileCinema(true);
     document.body.style.overflow = "hidden";
+    // Déclencher l'animation d'entrée au prochain frame (effet Netflix)
+    requestAnimationFrame(() => requestAnimationFrame(() => setCinemaVisible(true)));
   }
 
   function handleCinemaExit() {
-    setMobileCinema(false);
-    document.body.style.overflow = "";
+    setCinemaVisible(false);
+    // Attendre la fin de l'animation de sortie avant de remettre en normal
+    setTimeout(() => {
+      setMobileCinema(false);
+      document.body.style.overflow = "";
+    }, 380);
     vimeoMessage("pause");
     setPaused(true);
   }
 
-  // Swipe vers le bas pour quitter le mode cinéma
+  // Swipe vers le haut pour quitter le mode cinéma
   useEffect(() => {
     if (!mobileCinema) return;
     let startY = 0;
     const onTouchStart = (e: TouchEvent) => { startY = e.touches[0].clientY; };
     const onTouchMove = (e: TouchEvent) => {
-      if (e.touches[0].clientY - startY > 60) handleCinemaExit();
+      if (startY - e.touches[0].clientY > 60) handleCinemaExit();
     };
     window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchmove", onTouchMove, { passive: true });
     return () => {
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchmove", onTouchMove);
-      document.body.style.overflow = "";
     };
   }, [mobileCinema]);
 
@@ -199,8 +205,12 @@ export default function Approche() {
               zIndex: 200,
               background: "#080908",
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
+              opacity: cinemaVisible ? 1 : 0,
+              transform: cinemaVisible ? "scale(1)" : "scale(0.92)",
+              transition: "opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
             } : {
               flexShrink: 0,
               width: isMobile ? "100%" : expanded ? "78%" : "calc(50% - 2rem)",
@@ -208,6 +218,62 @@ export default function Approche() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Bouton cinéma — au-dessus de la vidéo, mode normal */}
+            {isMobile && playing && !mobileCinema && (
+              <div style={{ width: "100%", display: "flex", justifyContent: "flex-end", marginBottom: "0.5rem" }}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleCinemaEnter(); }}
+                  style={{
+                    background: "none",
+                    border: "1px solid var(--line)",
+                    color: "var(--muted)",
+                    cursor: "pointer",
+                    padding: "5px 10px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    fontFamily: "var(--font-label)",
+                    fontSize: "9px",
+                    fontWeight: 200,
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    transition: "color 0.2s, border-color 0.2s",
+                  }}
+                >
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                    <path d="M0 0h4v1.5H1.5V4H0V0zm6 0h4v4H8.5V1.5H6V0zM0 6h1.5v2.5H4V10H0V6zm8.5 2.5H6V10h4V6H8.5v2.5z"/>
+                  </svg>
+                  Cinéma
+                </button>
+              </div>
+            )}
+
+            {/* Fermer — mode cinéma mobile (en haut à droite de l'overlay) */}
+            {mobileCinema && (
+              <button
+                onClick={(e) => { e.stopPropagation(); handleCinemaExit(); }}
+                style={{
+                  position: "absolute",
+                  top: "1.25rem",
+                  right: "1.25rem",
+                  fontFamily: "var(--font-label)",
+                  fontSize: "9px",
+                  fontWeight: 200,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "var(--muted)",
+                  background: "none",
+                  border: "1px solid var(--line)",
+                  padding: "5px 10px",
+                  cursor: "pointer",
+                  zIndex: 10,
+                  transition: "color 0.2s, border-color 0.2s",
+                }}
+              >
+                Fermer
+              </button>
+            )}
+
             <RevealWrapper delay={0}>
               <div
                 onMouseMove={handleMouseMove}
@@ -295,68 +361,6 @@ export default function Approche() {
                     Regarder
                   </span>
                 </div>
-
-                {/* Bouton cinéma — mobile, vidéo lancée, pas encore en mode cinéma */}
-                {isMobile && playing && !mobileCinema && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleCinemaEnter(); }}
-                    style={{
-                      position: "absolute",
-                      bottom: "0.75rem",
-                      right: "0.75rem",
-                      background: "none",
-                      border: "1px solid var(--line)",
-                      color: "var(--muted)",
-                      cursor: "pointer",
-                      padding: "5px 8px",
-                      zIndex: 10,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.4rem",
-                      fontFamily: "var(--font-label)",
-                      fontSize: "9px",
-                      fontWeight: 200,
-                      letterSpacing: "0.15em",
-                      textTransform: "uppercase",
-                      transition: "color 0.2s, border-color 0.2s",
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.borderColor = "var(--muted)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = "var(--muted)"; e.currentTarget.style.borderColor = "var(--line)"; }}
-                  >
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-                      <path d="M0 0h4v1.5H1.5V4H0V0zm6 0h4v4H8.5V1.5H6V0zM0 6h1.5v2.5H4V10H0V6zm8.5 2.5H6V10h4V6H8.5v2.5z"/>
-                    </svg>
-                    Cinéma
-                  </button>
-                )}
-
-                {/* Bouton Fermer cinéma — mobile */}
-                {isMobile && mobileCinema && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleCinemaExit(); }}
-                    style={{
-                      position: "absolute",
-                      top: "1.25rem",
-                      right: "1.25rem",
-                      fontFamily: "var(--font-label)",
-                      fontSize: "9px",
-                      fontWeight: 200,
-                      letterSpacing: "0.15em",
-                      textTransform: "uppercase",
-                      color: "var(--muted)",
-                      background: "none",
-                      border: "1px solid var(--line)",
-                      padding: "5px 10px",
-                      cursor: "pointer",
-                      zIndex: 10,
-                      transition: "color 0.2s, border-color 0.2s",
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.borderColor = "var(--muted)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = "var(--muted)"; e.currentTarget.style.borderColor = "var(--line)"; }}
-                  >
-                    Fermer
-                  </button>
-                )}
 
                 {/* Bouton Fermer — desktop uniquement, vidéo en plein écran */}
                 {expanded && (
