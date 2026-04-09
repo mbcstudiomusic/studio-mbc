@@ -8,6 +8,7 @@ const VIMEO_BASE =
 
 export default function Approche() {
   const [expanded, setExpanded] = useState(false);
+  const [isCollapsing, setIsCollapsing] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -88,10 +89,12 @@ export default function Approche() {
 
   function handleCollapse() {
     vimeoMessage("pause");
+    setIsCollapsing(true);
     setExpanded(false);
     setPaused(false);
     setTimeout(() => {
       setPlaying(false);
+      setIsCollapsing(false);
     }, 950);
   }
 
@@ -310,9 +313,10 @@ export default function Approche() {
               paddingRight: "2vw",
               transform: expanded ? "translateX(120%)" : "translateX(0)",
               opacity: expanded ? 0 : 1,
-              transition:
-                "flex 0.95s cubic-bezier(0.4, 0, 0.2, 1), transform 0.85s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease",
               pointerEvents: expanded ? "none" : "auto",
+              transition: isCollapsing
+                ? "flex 0.95s cubic-bezier(0.4, 0, 0.2, 1), transform 0.85s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.75s ease 0.1s"
+                : "flex 0.95s cubic-bezier(0.4, 0, 0.2, 1), transform 0.85s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease",
             }}
           >
             <RevealWrapper delay={100}>
