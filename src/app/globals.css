@@ -20,6 +20,11 @@
   --font-inter: 'Inter', sans-serif;
 }
 
+/* Décalage scroll pour compenser la nav fixe (~68px) */
+section[id] {
+  scroll-margin-top: 68px;
+}
+
 h1, h2, h3 {
   font-family: var(--font-title);
 }
