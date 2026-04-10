@@ -4,8 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal, flushSync } from "react-dom";
 import RevealWrapper from "./RevealWrapper";
 
-const VIMEO_BASE =
-  "https://player.vimeo.com/video/872893131?h=6ed5f18815&api=1&controls=0&title=0&byline=0&portrait=0&color=c8cfc4&dnt=1";
+const YT_ID = "qtadfAEIb1A";
+const YT_BASE = `https://www.youtube.com/embed/${YT_ID}?enablejsapi=1&controls=0&rel=0&modestbranding=1&playsinline=1`;
 
 export default function Approche() {
   const [expanded, setExpanded] = useState(false);
@@ -32,67 +32,82 @@ export default function Approche() {
   const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playingRef = useRef(false);
   const mobileCinemaRef = useRef(false);
-  const playerRef = useRef<any>(null);       // instance Vimeo.Player principale
-  const cinemaPlayerRef = useRef<any>(null); // instance Vimeo.Player cinéma
+  const playerRef = useRef<any>(null);
+  const cinemaPlayerRef = useRef<any>(null);
 
-  // SSR safety for createPortal
   useEffect(() => setMounted(true), []);
 
-  // Charger le Vimeo Player SDK une seule fois
+  // Charger YouTube IFrame API
   useEffect(() => {
-    if (document.getElementById("vimeo-player-sdk")) return;
+    if (document.getElementById("yt-iframe-api")) return;
     const s = document.createElement("script");
-    s.id = "vimeo-player-sdk";
-    s.src = "https://player.vimeo.com/api/player.js";
+    s.id = "yt-iframe-api";
+    s.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(s);
   }, []);
 
-  // Initialiser Vimeo.Player SDK — vidéo principale
+  // Initialiser YT.Player — vidéo principale + poll currentTime
   useEffect(() => {
     if (!playing) return;
     let cancelled = false;
+    let poll: ReturnType<typeof setInterval> | null = null;
+
     const tryInit = () => {
       if (cancelled) return;
-      if (!(window as any).Vimeo?.Player || !iframeRef.current) {
+      if (!(window as any).YT?.Player || !iframeRef.current) {
         setTimeout(tryInit, 200);
         return;
       }
-      const p = new (window as any).Vimeo.Player(iframeRef.current);
+      const p = new (window as any).YT.Player(iframeRef.current);
       playerRef.current = p;
-      p.on("timeupdate", ({ seconds, duration: d }: { seconds: number; duration: number }) => {
-        setCurrentTime(seconds);
-        if (d) setDuration(d);
-      });
+      poll = setInterval(() => {
+        if (cancelled) return;
+        try {
+          const ct = p.getCurrentTime?.();
+          const dur = p.getDuration?.();
+          if (typeof ct === "number") setCurrentTime(ct);
+          if (typeof dur === "number" && dur > 0) setDuration(dur);
+        } catch {}
+      }, 250);
     };
     tryInit();
+
     return () => {
       cancelled = true;
-      playerRef.current?.off?.("timeupdate");
+      if (poll) clearInterval(poll);
       playerRef.current = null;
     };
   }, [playing, iframeKey]);
 
-  // Initialiser Vimeo.Player SDK — cinéma
+  // Initialiser YT.Player — cinéma + poll currentTime
   useEffect(() => {
     if (!mobileCinema) return;
     let cancelled = false;
+    let poll: ReturnType<typeof setInterval> | null = null;
+
     const tryInit = () => {
       if (cancelled) return;
-      if (!(window as any).Vimeo?.Player || !cinemaIframeRef.current) {
+      if (!(window as any).YT?.Player || !cinemaIframeRef.current) {
         setTimeout(tryInit, 200);
         return;
       }
-      const p = new (window as any).Vimeo.Player(cinemaIframeRef.current);
+      const p = new (window as any).YT.Player(cinemaIframeRef.current);
       cinemaPlayerRef.current = p;
-      p.on("timeupdate", ({ seconds, duration: d }: { seconds: number; duration: number }) => {
-        setCurrentTime(seconds);
-        if (d) setDuration(d);
-      });
+      poll = setInterval(() => {
+        if (cancelled) return;
+        try {
+          const ct = p.getCurrentTime?.();
+          const dur = p.getDuration?.();
+          if (typeof ct === "number") setCurrentTime(ct);
+          if (typeof dur === "number" && dur > 0) setDuration(dur);
+        } catch {}
+      }, 250);
     };
     tryInit();
+
     return () => {
       cancelled = true;
-      cinemaPlayerRef.current?.off?.("timeupdate");
+      if (poll) clearInterval(poll);
       cinemaPlayerRef.current = null;
     };
   }, [mobileCinema, cinemaIframeKey]);
@@ -108,7 +123,6 @@ export default function Approche() {
     mobileCinemaRef.current = mobileCinema;
   }, [mobileCinema]);
 
-  // Collapse on scroll (desktop expanded mode)
   useEffect(() => {
     if (!expanded) return;
     const onScroll = () => {
@@ -119,25 +133,34 @@ export default function Approche() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [expanded]);
 
-  // SDK en priorité, fallback postMessage brut
-  function vimeoCmd(method: string, value?: unknown) {
+  // Commandes YouTube — SDK en priorité, fallback postMessage
+  function ytCmd(method: string, value?: unknown) {
     const player = mobileCinemaRef.current ? cinemaPlayerRef.current : playerRef.current;
     if (player) {
-      if (method === "play")  { player.play().catch(() => {}); return; }
-      if (method === "pause") { player.pause().catch(() => {}); return; }
-      if (method === "setCurrentTime") {
-        player.setCurrentTime(value as number)
-          .then(() => { if (playingRef.current) player.play().catch(() => {}); })
-          .catch(() => {});
-        return;
-      }
+      try {
+        if (method === "play")  { player.playVideo();  return; }
+        if (method === "pause") { player.pauseVideo(); return; }
+        if (method === "setCurrentTime") {
+          player.seekTo(value as number, true);
+          if (playingRef.current) player.playVideo();
+          return;
+        }
+      } catch {}
     }
-    // Fallback postMessage
+    // Fallback postMessage YouTube
     const ref = mobileCinemaRef.current ? cinemaIframeRef : iframeRef;
-    ref.current?.contentWindow?.postMessage(
-      JSON.stringify(value !== undefined ? { method, value } : { method }),
-      "*"
-    );
+    const cmds: Record<string, { func: string; args: unknown[] }> = {
+      play:           { func: "playVideo",  args: [] },
+      pause:          { func: "pauseVideo", args: [] },
+      setCurrentTime: { func: "seekTo",     args: [value, true] },
+    };
+    const cmd = cmds[method];
+    if (cmd) {
+      ref.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: cmd.func, args: cmd.args }),
+        "*"
+      );
+    }
   }
 
   function showControlsBriefly() {
@@ -148,14 +171,8 @@ export default function Approche() {
   }
 
   function handleCinemaEnter() {
-    // Pause la vidéo principale avant de basculer en cinéma
-    if (playerRef.current) {
-      playerRef.current.pause();
-    } else {
-      iframeRef.current?.contentWindow?.postMessage(JSON.stringify({ method: "pause" }), "*");
-    }
+    try { playerRef.current?.pauseVideo?.(); } catch {}
     mobileCinemaRef.current = true;
-    // flushSync : monte le portal cinéma synchronement dans la gesture utilisateur
     flushSync(() => {
       setMobileCinema(true);
       setControlsVisible(false);
@@ -167,11 +184,7 @@ export default function Approche() {
   }
 
   function handleCinemaExit() {
-    if (cinemaPlayerRef.current) {
-      cinemaPlayerRef.current.pause();
-    } else {
-      cinemaIframeRef.current?.contentWindow?.postMessage(JSON.stringify({ method: "pause" }), "*");
-    }
+    try { cinemaPlayerRef.current?.pauseVideo?.(); } catch {}
     setCinemaVisible(false);
     setTimeout(() => {
       setMobileCinema(false);
@@ -181,7 +194,6 @@ export default function Approche() {
     setPaused(true);
   }
 
-  // Swipe up to exit cinema
   useEffect(() => {
     if (!mobileCinema) return;
     let startY = 0;
@@ -205,9 +217,7 @@ export default function Approche() {
     setTilt({ x: y * 5, y: x * -5 });
   }
 
-  function handleMouseLeave() {
-    setTilt({ x: 0, y: 0 });
-  }
+  function handleMouseLeave() { setTilt({ x: 0, y: 0 }); }
 
   function handlePlay() {
     window.dispatchEvent(new CustomEvent("studiombc:stopAudio"));
@@ -225,8 +235,7 @@ export default function Approche() {
     }
 
     playingRef.current = true;
-    // flushSync : force le render synchrone dans le click handler
-    // → le nouvel iframe avec autoplay=1 est dans le DOM AVANT que iOS ferme la fenêtre gesture
+    // flushSync : render synchrone → iframe autoplay=1 dans le DOM avant fermeture gesture iOS
     flushSync(() => {
       setPlaying(true);
       setIframeKey(k => k + 1);
@@ -238,17 +247,12 @@ export default function Approche() {
 
   function handlePauseToggle(e: React.MouseEvent) {
     e.stopPropagation();
-    if (paused) {
-      vimeoCmd("play");
-      setPaused(false);
-    } else {
-      vimeoCmd("pause");
-      setPaused(true);
-    }
+    if (paused) { ytCmd("play");  setPaused(false); }
+    else        { ytCmd("pause"); setPaused(true);  }
   }
 
   function handleCollapse() {
-    vimeoCmd("pause");
+    ytCmd("pause");
     playingRef.current = false;
     setIsCollapsing(true);
     setExpanded(false);
@@ -260,28 +264,14 @@ export default function Approche() {
     }, 950);
   }
 
-  function handleScrubberClick(
-    e: React.MouseEvent,
-    _targetRef: React.RefObject<HTMLIFrameElement | null>
-  ) {
-    e.stopPropagation();
-    if (!duration) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const frac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const seekTo = frac * duration;
-    vimeoCmd("setCurrentTime", seekTo);
-    setCurrentTime(seekTo);
-  }
-
   function showScrubberBriefly() {
     setScrubberVisible(true);
     if (scrubberTimeout.current) clearTimeout(scrubberTimeout.current);
     scrubberTimeout.current = setTimeout(() => setScrubberVisible(false), 3000);
   }
 
-  const videoSrc = playing ? VIMEO_BASE + "&autoplay=1" : VIMEO_BASE;
-  const cinemaSrc =
-    VIMEO_BASE + "&autoplay=1" + (currentTime > 1 ? `&t=${Math.floor(currentTime)}` : "");
+  const videoSrc = playing ? YT_BASE + "&autoplay=1" : YT_BASE;
+  const cinemaSrc = YT_BASE + "&autoplay=1" + (currentTime > 1 ? `&start=${Math.floor(currentTime)}` : "");
 
   const pauseIcon = (
     <div
@@ -308,54 +298,33 @@ export default function Approche() {
     </div>
   );
 
-  function scrubberBar(_targetRef: React.RefObject<HTMLIFrameElement | null>) {
+  function scrubberBar(_ref: React.RefObject<HTMLIFrameElement | null>) {
     const PAD = 14;
     const pct = duration ? (currentTime / duration) * 100 : 0;
 
-    function seek(clientX: number, containerRect: DOMRect) {
+    function seek(clientX: number, rect: DOMRect) {
       if (!duration) return;
-      const frac = Math.max(0, Math.min(1, (clientX - containerRect.left - PAD) / (containerRect.width - PAD * 2)));
+      const frac = Math.max(0, Math.min(1, (clientX - rect.left - PAD) / (rect.width - PAD * 2)));
       const seekTo = frac * duration;
-      vimeoCmd("setCurrentTime", seekTo);
+      ytCmd("setCurrentTime", seekTo);
       setCurrentTime(seekTo);
     }
 
     return (
       <div
         onClick={(e) => { e.stopPropagation(); seek(e.clientX, e.currentTarget.getBoundingClientRect()); }}
-        onTouchEnd={(e) => {
-          e.stopPropagation();
-          const t = e.changedTouches[0];
-          seek(t.clientX, e.currentTarget.getBoundingClientRect());
-        }}
+        onTouchEnd={(e) => { e.stopPropagation(); const t = e.changedTouches[0]; seek(t.clientX, e.currentTarget.getBoundingClientRect()); }}
         style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: "44px",          // grande zone de clic (pas juste 3px)
-          zIndex: 6,
-          display: "flex",
-          alignItems: "center",
-          padding: `0 ${PAD}px`,
+          position: "absolute", bottom: 0, left: 0, right: 0, height: "44px",
+          zIndex: 6, display: "flex", alignItems: "center", padding: `0 ${PAD}px`,
           background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)",
-          opacity: scrubberVisible ? 1 : 0,
-          transition: "opacity 0.3s ease",
-          pointerEvents: scrubberVisible ? "auto" : "none",
-          cursor: "pointer",
+          opacity: scrubberVisible ? 1 : 0, transition: "opacity 0.3s ease",
+          pointerEvents: scrubberVisible ? "auto" : "none", cursor: "pointer",
         }}
       >
-        {/* Track visuel */}
         <div style={{ position: "relative", width: "100%", height: "3px", background: "rgba(255,255,255,0.2)", borderRadius: "2px", pointerEvents: "none" }}>
           <div style={{ width: `${pct}%`, height: "100%", background: "var(--accent)", borderRadius: "2px" }} />
-          <div style={{
-            position: "absolute",
-            top: "50%",
-            left: `${pct}%`,
-            transform: "translate(-50%, -50%)",
-            width: "9px", height: "9px", borderRadius: "50%",
-            background: "var(--accent)",
-          }} />
+          <div style={{ position: "absolute", top: "50%", left: `${pct}%`, transform: "translate(-50%, -50%)", width: "9px", height: "9px", borderRadius: "50%", background: "var(--accent)" }} />
         </div>
       </div>
     );
@@ -421,41 +390,23 @@ export default function Approche() {
                   key={iframeKey}
                   ref={iframeRef}
                   src={videoSrc}
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    border: "none",
-                  }}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
                   allow="autoplay; fullscreen; picture-in-picture"
                   allowFullScreen
                   title="Approche"
                 />
 
-                {/* Bouton Cinéma — coin haut droit de la vidéo */}
+                {/* Bouton Cinéma — coin haut droit */}
                 {isMobile && playing && !mobileCinema && (
                   <button
                     onClick={(e) => { e.stopPropagation(); handleCinemaEnter(); }}
                     style={{
-                      position: "absolute",
-                      top: "0.75rem",
-                      right: "0.75rem",
-                      zIndex: 10,
-                      background: "rgba(8,9,8,0.65)",
-                      border: "1px solid rgba(200,207,196,0.35)",
-                      color: "rgba(200,207,196,0.85)",
-                      cursor: "pointer",
-                      padding: "5px 10px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      fontFamily: "var(--font-label)",
-                      fontSize: "9px",
-                      fontWeight: 200,
-                      letterSpacing: "0.15em",
-                      textTransform: "uppercase",
-                      backdropFilter: "blur(4px)",
+                      position: "absolute", top: "0.75rem", right: "0.75rem", zIndex: 10,
+                      background: "rgba(8,9,8,0.65)", border: "1px solid rgba(200,207,196,0.35)",
+                      color: "rgba(200,207,196,0.85)", cursor: "pointer", padding: "5px 10px",
+                      display: "flex", alignItems: "center", gap: "0.5rem",
+                      fontFamily: "var(--font-label)", fontSize: "9px", fontWeight: 200,
+                      letterSpacing: "0.15em", textTransform: "uppercase", backdropFilter: "blur(4px)",
                     }}
                   >
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
@@ -468,27 +419,15 @@ export default function Approche() {
                 <div
                   onClick={!playing ? handlePlay : undefined}
                   style={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    position: "absolute", inset: 0,
+                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                     zIndex: 2,
                     background: "linear-gradient(135deg, rgba(8,10,8,0.45) 0%, rgba(8,10,8,0.15) 100%)",
-                    opacity: playing ? 0 : 1,
-                    pointerEvents: playing ? "none" : "auto",
-                    cursor: "pointer",
-                    transition: "opacity 0.4s ease",
+                    opacity: playing ? 0 : 1, pointerEvents: playing ? "none" : "auto",
+                    cursor: "pointer", transition: "opacity 0.4s ease",
                   }}
-                  onMouseEnter={(e) => {
-                    if (!playing) e.currentTarget.style.background =
-                      "linear-gradient(135deg, rgba(8,10,8,0.6) 0%, rgba(8,10,8,0.25) 100%)";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!playing) e.currentTarget.style.background =
-                      "linear-gradient(135deg, rgba(8,10,8,0.45) 0%, rgba(8,10,8,0.15) 100%)";
-                  }}
+                  onMouseEnter={(e) => { if (!playing) e.currentTarget.style.background = "linear-gradient(135deg, rgba(8,10,8,0.6) 0%, rgba(8,10,8,0.25) 100%)"; }}
+                  onMouseLeave={(e) => { if (!playing) e.currentTarget.style.background = "linear-gradient(135deg, rgba(8,10,8,0.45) 0%, rgba(8,10,8,0.15) 100%)"; }}
                 >
                   <div style={{
                     width: "60px", height: "60px", borderRadius: "50%",
@@ -500,11 +439,7 @@ export default function Approche() {
                       <path d="M1 1l14 8L1 17V1z" />
                     </svg>
                   </div>
-                  <span style={{
-                    fontFamily: "Inter, sans-serif", fontSize: "0.55rem",
-                    fontWeight: 200, letterSpacing: "0.25em", textTransform: "uppercase",
-                    color: "rgba(240,236,228,0.9)",
-                  }}>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.55rem", fontWeight: 200, letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(240,236,228,0.9)" }}>
                     Regarder
                   </span>
                 </div>
@@ -514,66 +449,31 @@ export default function Approche() {
                   <button
                     onClick={(e) => { e.stopPropagation(); handleCollapse(); }}
                     style={{
-                      position: "absolute",
-                      top: "1.25rem",
-                      right: "1.25rem",
-                      fontFamily: "var(--font-label)",
-                      fontSize: "9px",
-                      fontWeight: 200,
-                      letterSpacing: "0.15em",
-                      textTransform: "uppercase",
-                      color: "var(--muted)",
-                      background: "none",
-                      border: "1px solid var(--line)",
-                      padding: "5px 10px",
-                      cursor: "pointer",
-                      transition: "color 0.2s, border-color 0.2s",
-                      zIndex: 10,
+                      position: "absolute", top: "1.25rem", right: "1.25rem",
+                      fontFamily: "var(--font-label)", fontSize: "9px", fontWeight: 200,
+                      letterSpacing: "0.15em", textTransform: "uppercase",
+                      color: "var(--muted)", background: "none", border: "1px solid var(--line)",
+                      padding: "5px 10px", cursor: "pointer", transition: "color 0.2s, border-color 0.2s", zIndex: 10,
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = "var(--text)";
-                      e.currentTarget.style.borderColor = "var(--muted)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = "var(--muted)";
-                      e.currentTarget.style.borderColor = "var(--line)";
-                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; e.currentTarget.style.borderColor = "var(--muted)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = "var(--muted)"; e.currentTarget.style.borderColor = "var(--line)"; }}
                   >
                     Fermer
                   </button>
                 )}
 
-                {/* Pause/play overlay — desktop expanded + mobile playing */}
+                {/* Pause/play overlay */}
                 {(expanded || (playing && isMobile && !mobileCinema)) && (
                   <div
                     onClick={handlePauseToggle}
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      zIndex: 3,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: "transparent",
-                      transition: "background 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "rgba(0,0,0,0.18)";
-                      const icon = e.currentTarget.querySelector(".pause-icon") as HTMLElement;
-                      if (icon) icon.style.opacity = "1";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "transparent";
-                      const icon = e.currentTarget.querySelector(".pause-icon") as HTMLElement;
-                      if (icon) icon.style.opacity = "0";
-                    }}
+                    style={{ position: "absolute", inset: 0, zIndex: 3, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", transition: "background 0.2s ease" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,0,0,0.18)"; const i = e.currentTarget.querySelector(".pause-icon") as HTMLElement; if (i) i.style.opacity = "1"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; const i = e.currentTarget.querySelector(".pause-icon") as HTMLElement; if (i) i.style.opacity = "0"; }}
                   >
                     {pauseIcon}
                   </div>
                 )}
 
-                {/* Scrubber — main video */}
                 {playing && !mobileCinema && scrubberBar(iframeRef)}
               </div>
             </RevealWrapper>
@@ -584,10 +484,8 @@ export default function Approche() {
             className="approche-text"
             style={{
               flex: expanded ? "0 0 0%" : "1 1 0%",
-              minWidth: 0,
-              overflow: "hidden",
-              paddingTop: "1rem",
-              paddingRight: "2vw",
+              minWidth: 0, overflow: "hidden",
+              paddingTop: "1rem", paddingRight: "2vw",
               transform: expanded ? "translateX(120%)" : "translateX(0)",
               opacity: expanded ? 0 : 1,
               pointerEvents: expanded ? "none" : "auto",
@@ -606,30 +504,20 @@ export default function Approche() {
             </RevealWrapper>
 
             <RevealWrapper delay={180}>
-              <h2 style={{
-                fontFamily: "Cormorant Garamond, serif", fontWeight: 400,
-                fontSize: "clamp(3rem, 4.2vw, 3.6rem)", lineHeight: 1.12,
-                color: "#f5f2eb", marginBottom: "2.5rem", maxWidth: "1100px", letterSpacing: "-0.015em",
-              }}>
+              <h2 style={{ fontFamily: "Cormorant Garamond, serif", fontWeight: 400, fontSize: "clamp(3rem, 4.2vw, 3.6rem)", lineHeight: 1.12, color: "#f5f2eb", marginBottom: "2.5rem", maxWidth: "1100px", letterSpacing: "-0.015em" }}>
                 Un langage singulier à la croisée de l&apos;organique et de l&apos;électronique
               </h2>
             </RevealWrapper>
 
             <RevealWrapper delay={260}>
-              <p style={{
-                fontFamily: "Lora, serif", fontWeight: 400, fontSize: "1rem",
-                color: "rgba(240,236,228,0.88)", lineHeight: 1.95, marginBottom: "2.5rem", maxWidth: "820px",
-              }}>
+              <p style={{ fontFamily: "Lora, serif", fontWeight: 400, fontSize: "1rem", color: "rgba(240,236,228,0.88)", lineHeight: 1.95, marginBottom: "2.5rem", maxWidth: "820px" }}>
                 Nous composons une musique organique et texturée qui explore les tensions invisibles des personnages — une écriture douce et mélodique en surface, traversée par une noirceur sous-jacente, conçue pour révéler ce que l&apos;image ne montre pas.
               </p>
             </RevealWrapper>
 
             <RevealWrapper delay={340}>
               <div style={{ borderLeft: "1px solid rgba(240,236,228,0.35)", paddingLeft: "1.75rem", maxWidth: "780px" }}>
-                <p style={{
-                  fontFamily: "Cormorant Garamond, serif", fontWeight: 500,
-                  fontSize: "1.35rem", fontStyle: "italic", color: "#ffffff", lineHeight: 1.7, letterSpacing: "-0.01em",
-                }}>
+                <p style={{ fontFamily: "Cormorant Garamond, serif", fontWeight: 500, fontSize: "1.35rem", fontStyle: "italic", color: "#ffffff", lineHeight: 1.7, letterSpacing: "-0.01em" }}>
                   &ldquo;Une musique qui expose la fracture intérieure sous une apparente douceur.&rdquo;
                 </p>
               </div>
@@ -639,46 +527,27 @@ export default function Approche() {
         </div>
       </div>
 
-      {/* ── CINEMA PORTAL — rendu directement dans document.body pour iOS Safari ── */}
+      {/* ── CINEMA PORTAL ── */}
       {mounted && mobileCinema && createPortal(
         <div
           onClick={showControlsBriefly}
           style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: "100dvh",
-            zIndex: 9999,
-            background: "#080908",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0, height: "100dvh",
+            zIndex: 9999, background: "#080908",
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
             opacity: cinemaVisible ? 1 : 0,
             transform: cinemaVisible ? "scale(1)" : "scale(0.92)",
             transition: "opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         >
-          {/* Fermer — visible uniquement après tap sur zone noire */}
           <button
             onClick={(e) => { e.stopPropagation(); handleCinemaExit(); }}
             style={{
-              position: "absolute",
-              top: "1.25rem",
-              right: "1.25rem",
-              fontFamily: "var(--font-label)",
-              fontSize: "9px",
-              fontWeight: 200,
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              color: "var(--muted)",
-              background: "none",
-              border: "1px solid var(--line)",
-              padding: "5px 10px",
-              cursor: "pointer",
-              zIndex: 10,
+              position: "absolute", top: "1.25rem", right: "1.25rem",
+              fontFamily: "var(--font-label)", fontSize: "9px", fontWeight: 200,
+              letterSpacing: "0.15em", textTransform: "uppercase",
+              color: "var(--muted)", background: "none", border: "1px solid var(--line)",
+              padding: "5px 10px", cursor: "pointer", zIndex: 10,
               opacity: controlsVisible ? 1 : 0,
               pointerEvents: controlsVisible ? "auto" : "none",
               transition: "opacity 0.25s ease",
@@ -687,49 +556,25 @@ export default function Approche() {
             Fermer
           </button>
 
-          {/* Video — s'adapte portrait ET paysage via 100dvh */}
           <div
-            style={{
-              position: "relative",
-              width: "min(100vw, calc(100dvh * 16 / 9))",
-              height: "min(100dvh, calc(100vw * 9 / 16))",
-            }}
+            style={{ position: "relative", width: "min(100vw, calc(100dvh * 16 / 9))", height: "min(100dvh, calc(100vw * 9 / 16))" }}
             onClick={(e) => e.stopPropagation()}
           >
             <iframe
               key={cinemaIframeKey}
               ref={cinemaIframeRef}
               src={cinemaSrc}
-              style={{
-                position: "absolute",
-                inset: 0,
-                width: "100%",
-                height: "100%",
-                border: "none",
-              }}
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
               allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen
               title="Approche Cinéma"
             />
-
-            {/* Pause/play overlay */}
             <div
               onClick={handlePauseToggle}
-              style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 3,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "transparent",
-              }}
+              style={{ position: "absolute", inset: 0, zIndex: 3, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent" }}
             >
               {pauseIcon}
             </div>
-
-            {/* Scrubber */}
             {scrubberBar(cinemaIframeRef)}
           </div>
         </div>,
