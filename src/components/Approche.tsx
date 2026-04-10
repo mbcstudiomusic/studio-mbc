@@ -22,6 +22,7 @@ export default function Approche() {
   const [duration, setDuration] = useState(0);
   const [scrubberVisible, setScrubberVisible] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(false);
+  const [muted, setMuted] = useState(true);
   const [mounted, setMounted] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLDivElement>(null);
@@ -86,6 +87,8 @@ export default function Approche() {
       }
       const p = new (window as any).Vimeo.Player(cinemaIframeRef.current);
       cinemaPlayerRef.current = p;
+      // Synchroniser l'état mute courant sur le player cinéma
+      p.setMuted(muted).catch(() => {});
       p.on("timeupdate", ({ seconds, duration: d }: { seconds: number; duration: number }) => {
         setCurrentTime(seconds);
         if (d) setDuration(d);
@@ -228,14 +231,24 @@ export default function Approche() {
     setTimeout(() => { setPlaying(false); setIsCollapsing(false); setCurrentTime(0); }, 950);
   }
 
+  function handleMuteToggle(e: React.MouseEvent) {
+    e.stopPropagation();
+    const next = !muted;
+    const player = mobileCinemaRef.current ? cinemaPlayerRef.current : playerRef.current;
+    if (player) {
+      player.setMuted(next).catch(() => {});
+    }
+    setMuted(next);
+  }
+
   function showScrubberBriefly() {
     setScrubberVisible(true);
     if (scrubberTimeout.current) clearTimeout(scrubberTimeout.current);
     scrubberTimeout.current = setTimeout(() => setScrubberVisible(false), 3000);
   }
 
-  const videoSrc   = playing ? VIMEO_BASE + "&autoplay=1" : VIMEO_BASE;
-  const cinemaSrc  = VIMEO_BASE + "&autoplay=1" + (currentTime > 1 ? `&t=${Math.floor(currentTime)}` : "");
+  const videoSrc  = playing ? VIMEO_BASE + "&autoplay=1&muted=1" : VIMEO_BASE;
+  const cinemaSrc = VIMEO_BASE + "&autoplay=1&muted=1" + (currentTime > 1 ? `&t=${Math.floor(currentTime)}` : "");
 
   const pauseIcon = (
     <div className="pause-icon" style={{ opacity: paused ? 1 : 0, transition: "opacity 0.2s ease", width: "52px", height: "52px", borderRadius: "50%", border: "1px solid rgba(240,236,228,0.5)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
@@ -291,6 +304,28 @@ export default function Approche() {
                 style={{ position: "relative", width: "100%", paddingBottom: "56.25%", backgroundColor: "#0a0c0a", transformOrigin: "center center", transform: expanded ? "perspective(900px) rotateX(0deg) rotateY(0deg) scale(1)" : `perspective(900px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${tilt.x === 0 && tilt.y === 0 ? 1 : 1.015})`, transition: "transform 0.7s cubic-bezier(0.23,1,0.32,1), box-shadow 0.7s ease", boxShadow: expanded ? "none" : tilt.x === 0 && tilt.y === 0 ? "0 8px 40px rgba(0,0,0,0.35)" : "0 24px 60px rgba(0,0,0,0.55)" }}
               >
                 <iframe key={iframeKey} ref={iframeRef} src={videoSrc} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title="Approche" />
+
+                {/* Bouton mute/unmute — coin haut gauche */}
+                {playing && !mobileCinema && (
+                  <button
+                    onClick={handleMuteToggle}
+                    style={{ position: "absolute", top: "0.75rem", left: "0.75rem", zIndex: 10, background: "rgba(8,9,8,0.65)", border: "1px solid rgba(200,207,196,0.35)", color: "rgba(200,207,196,0.85)", cursor: "pointer", padding: "6px", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", borderRadius: "2px" }}
+                  >
+                    {muted ? (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                        <line x1="23" y1="9" x2="17" y2="15"/>
+                        <line x1="17" y1="9" x2="23" y2="15"/>
+                      </svg>
+                    ) : (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                      </svg>
+                    )}
+                  </button>
+                )}
 
                 {/* Bouton Cinéma */}
                 {isMobile && playing && !mobileCinema && (
@@ -361,6 +396,25 @@ export default function Approche() {
         <div onClick={showControlsBriefly} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, height: "100dvh", zIndex: 9999, background: "#080908", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", opacity: cinemaVisible ? 1 : 0, transform: cinemaVisible ? "scale(1)" : "scale(0.92)", transition: "opacity 0.4s cubic-bezier(0.22,1,0.36,1), transform 0.4s cubic-bezier(0.22,1,0.36,1)" }}>
           <button onClick={(e) => { e.stopPropagation(); handleCinemaExit(); }} style={{ position: "absolute", top: "1.25rem", right: "1.25rem", fontFamily: "var(--font-label)", fontSize: "9px", fontWeight: 200, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--muted)", background: "none", border: "1px solid var(--line)", padding: "5px 10px", cursor: "pointer", zIndex: 10, opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? "auto" : "none", transition: "opacity 0.25s ease" }}>
             Fermer
+          </button>
+          {/* Mute/unmute cinéma */}
+          <button
+            onClick={(e) => { e.stopPropagation(); handleMuteToggle(e); }}
+            style={{ position: "absolute", top: "1.25rem", left: "1.25rem", zIndex: 10, background: "rgba(8,9,8,0.65)", border: "1px solid rgba(200,207,196,0.35)", color: "rgba(200,207,196,0.85)", cursor: "pointer", padding: "7px", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", borderRadius: "2px", opacity: controlsVisible ? 1 : 0, pointerEvents: controlsVisible ? "auto" : "none", transition: "opacity 0.25s ease" }}
+          >
+            {muted ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <line x1="23" y1="9" x2="17" y2="15"/>
+                <line x1="17" y1="9" x2="23" y2="15"/>
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              </svg>
+            )}
           </button>
           <div style={{ position: "relative", width: "min(100vw, calc(100dvh * 16 / 9))", height: "min(100dvh, calc(100vw * 9 / 16))" }} onClick={(e) => e.stopPropagation()}>
             <iframe key={cinemaIframeKey} ref={cinemaIframeRef} src={cinemaSrc} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title="Approche Cinéma" />
