@@ -32,9 +32,70 @@ export default function Approche() {
   const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playingRef = useRef(false);
   const mobileCinemaRef = useRef(false);
+  const playerRef = useRef<any>(null);       // instance Vimeo.Player principale
+  const cinemaPlayerRef = useRef<any>(null); // instance Vimeo.Player cinéma
 
   // SSR safety for createPortal
   useEffect(() => setMounted(true), []);
+
+  // Charger le Vimeo Player SDK une seule fois
+  useEffect(() => {
+    if (document.getElementById("vimeo-player-sdk")) return;
+    const s = document.createElement("script");
+    s.id = "vimeo-player-sdk";
+    s.src = "https://player.vimeo.com/api/player.js";
+    document.head.appendChild(s);
+  }, []);
+
+  // Initialiser Vimeo.Player SDK — vidéo principale
+  useEffect(() => {
+    if (!playing) return;
+    let cancelled = false;
+    const tryInit = () => {
+      if (cancelled) return;
+      if (!(window as any).Vimeo?.Player || !iframeRef.current) {
+        setTimeout(tryInit, 200);
+        return;
+      }
+      const p = new (window as any).Vimeo.Player(iframeRef.current);
+      playerRef.current = p;
+      p.on("timeupdate", ({ seconds, duration: d }: { seconds: number; duration: number }) => {
+        setCurrentTime(seconds);
+        if (d) setDuration(d);
+      });
+    };
+    tryInit();
+    return () => {
+      cancelled = true;
+      playerRef.current?.off?.("timeupdate");
+      playerRef.current = null;
+    };
+  }, [playing]);
+
+  // Initialiser Vimeo.Player SDK — cinéma
+  useEffect(() => {
+    if (!mobileCinema) return;
+    let cancelled = false;
+    const tryInit = () => {
+      if (cancelled) return;
+      if (!(window as any).Vimeo?.Player || !cinemaIframeRef.current) {
+        setTimeout(tryInit, 200);
+        return;
+      }
+      const p = new (window as any).Vimeo.Player(cinemaIframeRef.current);
+      cinemaPlayerRef.current = p;
+      p.on("timeupdate", ({ seconds, duration: d }: { seconds: number; duration: number }) => {
+        setCurrentTime(seconds);
+        if (d) setDuration(d);
+      });
+    };
+    tryInit();
+    return () => {
+      cancelled = true;
+      cinemaPlayerRef.current?.off?.("timeupdate");
+      cinemaPlayerRef.current = null;
+    };
+  }, [mobileCinema, cinemaIframeKey]);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768);
@@ -58,63 +119,21 @@ export default function Approche() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [expanded]);
 
-  function vimeoMessage(method: string, value?: unknown) {
+  // SDK en priorité, fallback postMessage brut
+  function vimeoCmd(method: string, value?: unknown) {
+    const player = mobileCinemaRef.current ? cinemaPlayerRef.current : playerRef.current;
+    if (player) {
+      if (method === "play")  { player.play();  return; }
+      if (method === "pause") { player.pause(); return; }
+      if (method === "setCurrentTime") { player.setCurrentTime(value as number); return; }
+    }
+    // Fallback postMessage
     const ref = mobileCinemaRef.current ? cinemaIframeRef : iframeRef;
     ref.current?.contentWindow?.postMessage(
       JSON.stringify(value !== undefined ? { method, value } : { method }),
       "*"
     );
   }
-
-  // Vimeo message listener — handles events from both iframes
-  useEffect(() => {
-    const handler = (e: MessageEvent) => {
-      try {
-        const data = JSON.parse(typeof e.data === "string" ? e.data : "{}");
-        if (data.event === "ready") {
-          // Subscribe on both iframes (we can't tell which one fired ready)
-          iframeRef.current?.contentWindow?.postMessage(
-            JSON.stringify({ method: "addEventListener", value: "timeupdate" }),
-            "*"
-          );
-          cinemaIframeRef.current?.contentWindow?.postMessage(
-            JSON.stringify({ method: "addEventListener", value: "timeupdate" }),
-            "*"
-          );
-        }
-        if (data.event === "timeupdate" && data.data) {
-          setCurrentTime(data.data.seconds ?? 0);
-          if (data.data.duration) setDuration(data.data.duration);
-        }
-      } catch { /* ignore */ }
-    };
-    window.addEventListener("message", handler);
-    return () => window.removeEventListener("message", handler);
-  }, []);
-
-  // Fallback subscribe — main iframe
-  useEffect(() => {
-    if (!playing) return;
-    const t = setTimeout(() => {
-      iframeRef.current?.contentWindow?.postMessage(
-        JSON.stringify({ method: "addEventListener", value: "timeupdate" }),
-        "*"
-      );
-    }, 800);
-    return () => clearTimeout(t);
-  }, [playing, iframeKey]);
-
-  // Fallback subscribe — cinema iframe
-  useEffect(() => {
-    if (!mobileCinema) return;
-    const t = setTimeout(() => {
-      cinemaIframeRef.current?.contentWindow?.postMessage(
-        JSON.stringify({ method: "addEventListener", value: "timeupdate" }),
-        "*"
-      );
-    }, 800);
-    return () => clearTimeout(t);
-  }, [mobileCinema, cinemaIframeKey]);
 
   function showControlsBriefly() {
     setControlsVisible(true);
@@ -124,11 +143,12 @@ export default function Approche() {
   }
 
   function handleCinemaEnter() {
-    // Pause main iframe directly (before mobileCinemaRef flips)
-    iframeRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ method: "pause" }),
-      "*"
-    );
+    // Pause la vidéo principale avant de basculer en cinéma
+    if (playerRef.current) {
+      playerRef.current.pause();
+    } else {
+      iframeRef.current?.contentWindow?.postMessage(JSON.stringify({ method: "pause" }), "*");
+    }
     mobileCinemaRef.current = true;
     setMobileCinema(true);
     setControlsVisible(false);
@@ -140,10 +160,11 @@ export default function Approche() {
   }
 
   function handleCinemaExit() {
-    cinemaIframeRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ method: "pause" }),
-      "*"
-    );
+    if (cinemaPlayerRef.current) {
+      cinemaPlayerRef.current.pause();
+    } else {
+      cinemaIframeRef.current?.contentWindow?.postMessage(JSON.stringify({ method: "pause" }), "*");
+    }
     setCinemaVisible(false);
     setTimeout(() => {
       setMobileCinema(false);
@@ -199,11 +220,13 @@ export default function Approche() {
     playingRef.current = true;
     setPlaying(true);
     setPaused(false);
-    // Envoyer play SYNCHRONEMENT dans le handler (user gesture encore actif sur iOS Safari)
-    iframeRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ method: "play" }),
-      "*"
-    );
+    // Synchrone dans le handler = user gesture actif sur iOS Safari
+    // SDK pas encore init au 1er click → postMessage direct en fallback
+    if (playerRef.current) {
+      playerRef.current.play();
+    } else {
+      iframeRef.current?.contentWindow?.postMessage(JSON.stringify({ method: "play" }), "*");
+    }
     if (!isMobile) setTimeout(() => setExpanded(true), 20);
     setTimeout(() => { suppressScroll.current = false; }, 1600);
   }
@@ -211,16 +234,16 @@ export default function Approche() {
   function handlePauseToggle(e: React.MouseEvent) {
     e.stopPropagation();
     if (paused) {
-      vimeoMessage("play");
+      vimeoCmd("play");
       setPaused(false);
     } else {
-      vimeoMessage("pause");
+      vimeoCmd("pause");
       setPaused(true);
     }
   }
 
   function handleCollapse() {
-    vimeoMessage("pause");
+    vimeoCmd("pause");
     playingRef.current = false;
     setIsCollapsing(true);
     setExpanded(false);
@@ -234,17 +257,14 @@ export default function Approche() {
 
   function handleScrubberClick(
     e: React.MouseEvent,
-    targetRef: React.RefObject<HTMLIFrameElement | null>
+    _targetRef: React.RefObject<HTMLIFrameElement | null>
   ) {
     e.stopPropagation();
     if (!duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const frac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
     const seekTo = frac * duration;
-    targetRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ method: "setCurrentTime", value: seekTo }),
-      "*"
-    );
+    vimeoCmd("setCurrentTime", seekTo);
     setCurrentTime(seekTo);
   }
 
