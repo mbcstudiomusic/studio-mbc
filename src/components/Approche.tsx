@@ -247,7 +247,7 @@ export default function Approche() {
     scrubberTimeout.current = setTimeout(() => setScrubberVisible(false), 3000);
   }
 
-  const videoSrc  = playing ? VIMEO_BASE + "&autoplay=1&muted=1" : VIMEO_BASE;
+  const videoSrc  = playing ? VIMEO_BASE + "&autoplay=1" + (isMobile ? "&muted=1" : "") : VIMEO_BASE;
   const cinemaSrc = VIMEO_BASE + "&autoplay=1&muted=1" + (currentTime > 1 ? `&t=${Math.floor(currentTime)}` : "");
 
   const pauseIcon = (
@@ -306,7 +306,7 @@ export default function Approche() {
                 <iframe key={iframeKey} ref={iframeRef} src={videoSrc} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title="Approche" />
 
                 {/* Bouton mute/unmute — coin haut gauche */}
-                {playing && !mobileCinema && (
+                {isMobile && playing && !mobileCinema && (
                   <button
                     onClick={handleMuteToggle}
                     style={{ position: "absolute", top: "0.75rem", left: "0.75rem", zIndex: 10, background: "rgba(8,9,8,0.65)", border: "1px solid rgba(200,207,196,0.35)", color: "rgba(200,207,196,0.85)", cursor: "pointer", padding: "6px", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", borderRadius: "2px" }}
