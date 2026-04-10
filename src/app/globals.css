@@ -732,10 +732,10 @@ footer {
 
   /* Sections */
   section { padding: 3.5rem 5vw !important; }
-  #hero { padding: 0 5vw 4vh !important; }
+  #hero { padding: 0 5vw calc(4vh + 1.5rem) !important; }
 
   /* Hero */
-  .hero-eyebrow { font-size: 8px !important; margin-bottom: 8rem !important; }
+  .hero-eyebrow { font-size: 8px !important; margin-bottom: 3rem !important; }
   .hero-title .line { white-space: normal; }
   .t-light, .t-bold { font-size: clamp(1.5rem, 7.5vw, 2rem) !important; }
   .t-amp { font-size: clamp(1.3rem, 6.5vw, 1.8rem) !important; }
