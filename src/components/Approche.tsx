@@ -21,6 +21,7 @@ export default function Approche() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [scrubberVisible, setScrubberVisible] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLDivElement>(null);
@@ -28,6 +29,7 @@ export default function Approche() {
   const cinemaIframeRef = useRef<HTMLIFrameElement>(null);
   const suppressScroll = useRef(false);
   const scrubberTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playingRef = useRef(false);
   const mobileCinemaRef = useRef(false);
 
@@ -114,6 +116,13 @@ export default function Approche() {
     return () => clearTimeout(t);
   }, [mobileCinema, cinemaIframeKey]);
 
+  function showControlsBriefly() {
+    setControlsVisible(true);
+    showScrubberBriefly();
+    if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
+    controlsTimeout.current = setTimeout(() => setControlsVisible(false), 3000);
+  }
+
   function handleCinemaEnter() {
     // Pause main iframe directly (before mobileCinemaRef flips)
     iframeRef.current?.contentWindow?.postMessage(
@@ -122,8 +131,11 @@ export default function Approche() {
     );
     mobileCinemaRef.current = true;
     setMobileCinema(true);
+    setControlsVisible(false);
     document.body.style.overflow = "hidden";
     setCinemaIframeKey(k => k + 1);
+    // Nudge iOS Safari pour masquer la barre d'adresse
+    setTimeout(() => window.scrollTo(0, 1), 50);
     requestAnimationFrame(() => requestAnimationFrame(() => setCinemaVisible(true)));
   }
 
@@ -605,9 +617,14 @@ export default function Approche() {
       {/* ── CINEMA PORTAL — rendu directement dans document.body pour iOS Safari ── */}
       {mounted && mobileCinema && createPortal(
         <div
+          onClick={showControlsBriefly}
           style={{
             position: "fixed",
-            inset: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: "100dvh",
             zIndex: 9999,
             background: "#080908",
             display: "flex",
@@ -619,7 +636,7 @@ export default function Approche() {
             transition: "opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         >
-          {/* Fermer */}
+          {/* Fermer — visible uniquement après tap sur zone noire */}
           <button
             onClick={(e) => { e.stopPropagation(); handleCinemaExit(); }}
             style={{
@@ -637,19 +654,22 @@ export default function Approche() {
               padding: "5px 10px",
               cursor: "pointer",
               zIndex: 10,
+              opacity: controlsVisible ? 1 : 0,
+              pointerEvents: controlsVisible ? "auto" : "none",
+              transition: "opacity 0.25s ease",
             }}
           >
             Fermer
           </button>
 
-          {/* Video — s'adapte portrait ET paysage */}
+          {/* Video — s'adapte portrait ET paysage via 100dvh */}
           <div
             style={{
               position: "relative",
-              width: "min(100vw, calc(100vh * 16 / 9))",
-              height: "min(100vh, calc(100vw * 9 / 16))",
+              width: "min(100vw, calc(100dvh * 16 / 9))",
+              height: "min(100dvh, calc(100vw * 9 / 16))",
             }}
-            onTouchStart={showScrubberBriefly}
+            onClick={(e) => e.stopPropagation()}
           >
             <iframe
               key={cinemaIframeKey}
