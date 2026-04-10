@@ -303,53 +303,53 @@ export default function Approche() {
     </div>
   );
 
-  function scrubberBar(targetRef: React.RefObject<HTMLIFrameElement | null>) {
+  function scrubberBar(_targetRef: React.RefObject<HTMLIFrameElement | null>) {
+    const PAD = 14;
+    const pct = duration ? (currentTime / duration) * 100 : 0;
+
+    function seek(clientX: number, containerRect: DOMRect) {
+      if (!duration) return;
+      const frac = Math.max(0, Math.min(1, (clientX - containerRect.left - PAD) / (containerRect.width - PAD * 2)));
+      const seekTo = frac * duration;
+      vimeoCmd("setCurrentTime", seekTo);
+      setCurrentTime(seekTo);
+    }
+
     return (
       <div
+        onClick={(e) => { e.stopPropagation(); seek(e.clientX, e.currentTarget.getBoundingClientRect()); }}
+        onTouchEnd={(e) => {
+          e.stopPropagation();
+          const t = e.changedTouches[0];
+          seek(t.clientX, e.currentTarget.getBoundingClientRect());
+        }}
         style={{
           position: "absolute",
           bottom: 0,
           left: 0,
           right: 0,
-          height: "36px",
+          height: "44px",          // grande zone de clic (pas juste 3px)
           zIndex: 6,
           display: "flex",
           alignItems: "center",
-          padding: "0 14px",
+          padding: `0 ${PAD}px`,
           background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)",
           opacity: scrubberVisible ? 1 : 0,
           transition: "opacity 0.3s ease",
           pointerEvents: scrubberVisible ? "auto" : "none",
+          cursor: "pointer",
         }}
       >
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            height: "3px",
-            background: "rgba(255,255,255,0.2)",
-            borderRadius: "2px",
-            cursor: "pointer",
-          }}
-          onClick={(e) => handleScrubberClick(e, targetRef)}
-        >
-          <div style={{
-            width: `${duration ? (currentTime / duration) * 100 : 0}%`,
-            height: "100%",
-            background: "var(--accent)",
-            borderRadius: "2px",
-            pointerEvents: "none",
-          }} />
+        {/* Track visuel */}
+        <div style={{ position: "relative", width: "100%", height: "3px", background: "rgba(255,255,255,0.2)", borderRadius: "2px", pointerEvents: "none" }}>
+          <div style={{ width: `${pct}%`, height: "100%", background: "var(--accent)", borderRadius: "2px" }} />
           <div style={{
             position: "absolute",
             top: "50%",
-            left: `${duration ? (currentTime / duration) * 100 : 0}%`,
+            left: `${pct}%`,
             transform: "translate(-50%, -50%)",
-            width: "9px",
-            height: "9px",
-            borderRadius: "50%",
+            width: "9px", height: "9px", borderRadius: "50%",
             background: "var(--accent)",
-            pointerEvents: "none",
           }} />
         </div>
       </div>
