@@ -103,7 +103,7 @@ function ProjectCard({ project, onClick }: ProjectCardProps) {
           <p
             style={{
               fontFamily: "var(--font-label)",
-              fontSize: "0.55rem",
+              fontSize: "0.7rem",
               fontWeight: 200,
               fontStyle: "normal",
               color: "var(--muted)",
