@@ -388,9 +388,6 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
 
           <div style={{ borderTop: "1px solid var(--line)", marginBottom: "1.25rem" }} />
 
-          {/* Équipe technique */}
-          <span style={{ ...labelStyle, marginBottom: "1rem" }}>Équipe technique</span>
-
           {project.realisateur && (
             <>
               <span style={{ ...labelStyle, fontWeight: 400 }}>Réalisation</span>
@@ -407,6 +404,32 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
 
           <span style={{ ...labelStyle, fontWeight: 400 }}>Musique</span>
           <span style={{ ...valueStyle, marginBottom: "1.5rem" }}>Valentin Marinelli &amp; Clément Barbier</span>
+
+          {/* Distinctions — si remplies */}
+          {project.distinctions && (
+            <>
+              <div style={{ borderTop: "1px solid var(--line)", marginBottom: "1.25rem" }} />
+              <span style={{ ...labelStyle, marginBottom: "0.75rem" }}>Distinctions</span>
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
+                {project.distinctions.split("|").map((d, i) => (
+                  <span
+                    key={i}
+                    style={{ ...linkBtnStyle, cursor: "default" }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLSpanElement).style.color = "var(--text)";
+                      (e.currentTarget as HTMLSpanElement).style.borderColor = "var(--muted)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLSpanElement).style.color = "var(--muted)";
+                      (e.currentTarget as HTMLSpanElement).style.borderColor = "var(--line)";
+                    }}
+                  >
+                    {d.trim()}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
 
           {/* Liens — toujours visibles */}
           <div style={{ borderTop: "1px solid var(--line)", marginBottom: "1.25rem" }} />

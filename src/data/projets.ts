@@ -13,6 +13,7 @@ export interface Project {
   production: string;
   trailer: string;
   imdb: string;
+  distinctions: string;
 }
 
 function splitCSVLine(line: string, sep: string): string[] {
@@ -112,6 +113,7 @@ function parseCSV(content: string, sep: string): Project[] {
       production: row["production"] ?? "",
       trailer: row["trailer"] ?? "",
       imdb: row["imdb"] ?? "",
+      distinctions: row["distinctions"] ?? "",
     });
   }
 
