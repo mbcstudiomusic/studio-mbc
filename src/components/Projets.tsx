@@ -99,17 +99,19 @@ function ProjectCard({ project, onClick }: ProjectCardProps) {
         >
           {project.title}
         </p>
-        <p
-          style={{
-            fontFamily: "var(--font-label)",
-            fontSize: "0.55rem",
-            fontWeight: 200,
-            fontStyle: "normal",
-            color: "var(--muted)",
-          }}
-        >
-          {project.year}
-        </p>
+        {project.production && (
+          <p
+            style={{
+              fontFamily: "var(--font-label)",
+              fontSize: "0.55rem",
+              fontWeight: 200,
+              fontStyle: "normal",
+              color: "var(--muted)",
+            }}
+          >
+            {project.production}
+          </p>
+        )}
       </div>
     </div>
   );
