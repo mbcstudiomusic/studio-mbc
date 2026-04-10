@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import RevealWrapper from "./RevealWrapper";
 
 const VIMEO_BASE =
@@ -70,7 +70,7 @@ export default function Approche() {
       playerRef.current?.off?.("timeupdate");
       playerRef.current = null;
     };
-  }, [playing]);
+  }, [playing, iframeKey]);
 
   // Initialiser Vimeo.Player SDK — cinéma
   useEffect(() => {
@@ -123,9 +123,14 @@ export default function Approche() {
   function vimeoCmd(method: string, value?: unknown) {
     const player = mobileCinemaRef.current ? cinemaPlayerRef.current : playerRef.current;
     if (player) {
-      if (method === "play")  { player.play();  return; }
-      if (method === "pause") { player.pause(); return; }
-      if (method === "setCurrentTime") { player.setCurrentTime(value as number); return; }
+      if (method === "play")  { player.play().catch(() => {}); return; }
+      if (method === "pause") { player.pause().catch(() => {}); return; }
+      if (method === "setCurrentTime") {
+        player.setCurrentTime(value as number)
+          .then(() => { if (playingRef.current) player.play().catch(() => {}); })
+          .catch(() => {});
+        return;
+      }
     }
     // Fallback postMessage
     const ref = mobileCinemaRef.current ? cinemaIframeRef : iframeRef;
@@ -150,11 +155,13 @@ export default function Approche() {
       iframeRef.current?.contentWindow?.postMessage(JSON.stringify({ method: "pause" }), "*");
     }
     mobileCinemaRef.current = true;
-    setMobileCinema(true);
-    setControlsVisible(false);
+    // flushSync : monte le portal cinéma synchronement dans la gesture utilisateur
+    flushSync(() => {
+      setMobileCinema(true);
+      setControlsVisible(false);
+      setCinemaIframeKey(k => k + 1);
+    });
     document.body.style.overflow = "hidden";
-    setCinemaIframeKey(k => k + 1);
-    // Nudge iOS Safari pour masquer la barre d'adresse
     setTimeout(() => window.scrollTo(0, 1), 50);
     requestAnimationFrame(() => requestAnimationFrame(() => setCinemaVisible(true)));
   }
@@ -218,15 +225,13 @@ export default function Approche() {
     }
 
     playingRef.current = true;
-    setPlaying(true);
-    setPaused(false);
-    // Synchrone dans le handler = user gesture actif sur iOS Safari
-    // SDK pas encore init au 1er click → postMessage direct en fallback
-    if (playerRef.current) {
-      playerRef.current.play();
-    } else {
-      iframeRef.current?.contentWindow?.postMessage(JSON.stringify({ method: "play" }), "*");
-    }
+    // flushSync : force le render synchrone dans le click handler
+    // → le nouvel iframe avec autoplay=1 est dans le DOM AVANT que iOS ferme la fenêtre gesture
+    flushSync(() => {
+      setPlaying(true);
+      setIframeKey(k => k + 1);
+      setPaused(false);
+    });
     if (!isMobile) setTimeout(() => setExpanded(true), 20);
     setTimeout(() => { suppressScroll.current = false; }, 1600);
   }
@@ -274,7 +279,7 @@ export default function Approche() {
     scrubberTimeout.current = setTimeout(() => setScrubberVisible(false), 3000);
   }
 
-  const videoSrc = VIMEO_BASE; // pas d'autoplay dans l'URL, contrôlé via postMessage play
+  const videoSrc = playing ? VIMEO_BASE + "&autoplay=1" : VIMEO_BASE;
   const cinemaSrc =
     VIMEO_BASE + "&autoplay=1" + (currentTime > 1 ? `&t=${Math.floor(currentTime)}` : "");
 
