@@ -71,7 +71,7 @@ export default function LeDuo() {
         <RevealWrapper delay={160}>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             {/* Photo A4 centrée */}
-            <div className="duo-photo-wrap" style={{ width: "100%" }}>
+            <div className="duo-photo-wrap" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
               <div
                 className="duo-photo"
                 style={{
@@ -109,7 +109,7 @@ export default function LeDuo() {
         <RevealWrapper delay={240}>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
             {/* Photo A4 centrée */}
-            <div className="duo-photo-wrap" style={{ width: "100%" }}>
+            <div className="duo-photo-wrap" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
               <div
                 className="duo-photo"
                 style={{
