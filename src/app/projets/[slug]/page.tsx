@@ -260,7 +260,7 @@ export default async function ProjetPage({
                 {divider}
                 {project.realisateur && (
                   <>
-                    <span style={label}>Réalisation</span>
+                    <span style={label}>{project.type === "Théâtre" ? "Mise en scène" : "Réalisation"}</span>
                     <span style={value}>{project.realisateur}</span>
                   </>
                 )}

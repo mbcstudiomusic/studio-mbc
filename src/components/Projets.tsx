@@ -392,7 +392,7 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
 
           {project.realisateur && (
             <>
-              <span style={{ ...labelStyle, fontWeight: 400 }}>Réalisation</span>
+              <span style={{ ...labelStyle, fontWeight: 400 }}>{project.type === "Théâtre" ? "Mise en scène" : "Réalisation"}</span>
               <span style={valueStyle}>{project.realisateur}</span>
             </>
           )}
