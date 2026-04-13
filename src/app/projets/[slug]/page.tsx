@@ -174,12 +174,26 @@ export default async function ProjetPage({
             width: "260px",
             height: "370px",
             flexShrink: 0,
-            backgroundImage: `url('${project.image || project.poster}')`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
             border: "1px solid var(--line)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#080908",
+            overflow: "hidden",
           }}
-        />
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={project.image || project.poster}
+            alt={project.title}
+            style={{
+              maxWidth: "100%",
+              maxHeight: "100%",
+              objectFit: "contain",
+              opacity: 0.9,
+            }}
+          />
+        </div>
 
         {/* Text */}
         <div style={{ flex: 1, maxWidth: "580px" }}>
