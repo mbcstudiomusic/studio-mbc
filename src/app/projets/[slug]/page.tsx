@@ -140,17 +140,23 @@ export default async function ProjetPage({
         >
           ← Retour
         </Link>
-        <span
+        <Link
+          href="/"
           style={{
-            fontFamily: "var(--font-title)",
-            fontSize: "0.85rem",
+            fontFamily: "'Cormorant Garamond', serif",
             fontWeight: 300,
-            color: "var(--muted)",
+            fontSize: "clamp(0.75rem, 2.2vw, 1rem)",
+            color: "var(--accent)",
+            textDecoration: "none",
             letterSpacing: "0.04em",
           }}
         >
-          Studio <strong style={{ fontWeight: 700, textTransform: "uppercase" }}>MBC</strong>
-        </span>
+          <span>Valentin </span>
+          <strong style={{ fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Marinelli</strong>
+          <span style={{ color: "var(--muted)", fontStyle: "italic", margin: "0 0.4em", fontWeight: 200 }}>&amp;</span>
+          <span>Clément </span>
+          <strong style={{ fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Barbier</strong>
+        </Link>
       </header>
 
       {/* Content */}
