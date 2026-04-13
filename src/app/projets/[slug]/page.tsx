@@ -27,14 +27,26 @@ export async function generateMetadata({
   return {
     title: `${project.title} — Studio MBC`,
     description,
-    alternates: {
-      canonical: `${SITE_URL}/projets/${project.slug}`,
-    },
+    alternates: { canonical: `${SITE_URL}/projets/${project.slug}` },
     openGraph: {
       title: `${project.title} — Studio MBC`,
       description,
+      url: `${SITE_URL}/projets/${project.slug}`,
       siteName: "Studio MBC",
-      images: [{ url: `${SITE_URL}${project.poster}` }],
+      type: "website",
+      locale: "fr_FR",
+      images: [{
+        url: `${SITE_URL}${project.poster}`,
+        width: 1200,
+        height: 675,
+        alt: project.title,
+      }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${project.title} — Studio MBC`,
+      description,
+      images: [`${SITE_URL}${project.poster}`],
     },
   };
 }
@@ -48,19 +60,36 @@ export default async function ProjetPage({
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
 
+  const composers = [
+    {
+      "@type": "Person",
+      name: "Valentin Marinelli",
+      jobTitle: "Compositeur",
+      memberOf: { "@type": "Organization", name: "Studio MBC", url: SITE_URL },
+    },
+    {
+      "@type": "Person",
+      name: "Clément Barbier",
+      jobTitle: "Compositeur",
+      memberOf: { "@type": "Organization", name: "Studio MBC", url: SITE_URL },
+    },
+  ];
+
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "MusicComposition",
+    "@type": "CreativeWork",
+    additionalType: "https://schema.org/MusicComposition",
     name: project.title,
     description: project.synopsis,
     dateCreated: String(project.year),
     genre: project.type,
-    composer: [
-      { "@type": "Person", name: "Valentin Marinelli" },
-      { "@type": "Person", name: "Clément Barbier" },
-    ],
+    url: `${SITE_URL}/projets/${project.slug}`,
+    image: `${SITE_URL}${project.poster}`,
+    author: composers,
+    contributor: composers,
     ...(project.realisateur && { director: { "@type": "Person", name: project.realisateur } }),
     ...(project.production && { productionCompany: { "@type": "Organization", name: project.production } }),
+    ...(project.trailer && { sameAs: project.trailer }),
   };
 
   return (
@@ -208,21 +237,75 @@ export default async function ProjetPage({
             {project.synopsis}
           </p>
 
-          {/* Équipe */}
-          <p
-            style={{
-              fontFamily: "var(--font-label)",
-              fontSize: "0.6rem",
-              fontWeight: 200,
-              fontStyle: "normal",
-              letterSpacing: "0.1em",
-              color: "var(--muted)",
-              borderTop: "1px solid var(--line)",
-              paddingTop: "1.25rem",
-            }}
-          >
-            {project.realisateur}
-          </p>
+          {/* Équipe + distinctions + liens */}
+          {(() => {
+            const label: React.CSSProperties = {
+              fontFamily: "var(--font-label)", fontSize: "8px", fontWeight: 200,
+              letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--muted)",
+              display: "block", marginBottom: "0.4rem",
+            };
+            const value: React.CSSProperties = {
+              fontFamily: "var(--font-label)", fontSize: "0.75rem", fontWeight: 200,
+              color: "var(--text)", display: "block", marginBottom: "0.75rem",
+            };
+            const linkBtn: React.CSSProperties = {
+              fontFamily: "var(--font-label)", fontSize: "8px", fontWeight: 200,
+              letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--muted)",
+              textDecoration: "none", border: "1px solid var(--line)", padding: "5px 12px",
+              display: "inline-flex", alignItems: "center", gap: "0.4rem",
+            };
+            const divider = <div style={{ borderTop: "1px solid var(--line)", margin: "1.25rem 0" }} />;
+            return (
+              <div style={{ marginTop: "0.5rem" }}>
+                {divider}
+                {project.realisateur && (
+                  <>
+                    <span style={label}>Réalisation</span>
+                    <span style={value}>{project.realisateur}</span>
+                  </>
+                )}
+                {project.production && (
+                  <>
+                    <span style={label}>Production</span>
+                    <span style={value}>{project.production}</span>
+                  </>
+                )}
+                <span style={label}>Musique originale</span>
+                <span style={value}>Valentin Marinelli &amp; Clément Barbier</span>
+
+                {project.distinctions && (
+                  <>
+                    {divider}
+                    <span style={{ ...label, marginBottom: "0.75rem" }}>Distinctions</span>
+                    <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
+                      {project.distinctions.split("|").map((d, i) => (
+                        <span key={i} style={{ ...linkBtn, cursor: "default" }}>{d.trim()}</span>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {divider}
+                <span style={{ ...label, marginBottom: "0.75rem" }}>Liens</span>
+                <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                  {project.trailer ? (
+                    <a href={project.trailer} target="_blank" rel="noopener noreferrer" style={linkBtn}>
+                      ↗ Bande-annonce
+                    </a>
+                  ) : (
+                    <span style={{ ...linkBtn, opacity: 0.3, cursor: "default" }}>↗ Bande-annonce</span>
+                  )}
+                  {project.imdb ? (
+                    <a href={project.imdb} target="_blank" rel="noopener noreferrer" style={linkBtn}>
+                      ↗ IMDb
+                    </a>
+                  ) : (
+                    <span style={{ ...linkBtn, opacity: 0.3, cursor: "default" }}>↗ IMDb</span>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
     </main>
