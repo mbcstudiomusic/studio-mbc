@@ -17,7 +17,7 @@ const tracks = [
     src: "/audio/Le ballon de la liberté.wav",
   },
   {
-    title: "Gorfou & Alabatros - Parades ",
+    title: "Albatros & Gorfou - Parades",
     subtitle: "Documentaire · 2019",
     src: "/audio/Parades.wav",
   },

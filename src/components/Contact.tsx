@@ -356,7 +356,7 @@ export default function Contact() {
       {/* Footer */}
       <div className="contact-footer" style={{ borderTop: "1px solid var(--line)", paddingTop: "2rem", marginTop: "6rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "0.6rem", fontWeight: 200, color: "var(--muted)", fontStyle: "normal", letterSpacing: "0.05em" }}>
-          © {new Date().getFullYear()} Studio MBC — Valentin Marinelli &amp; Clément Barbier
+          © {new Date().getFullYear()}{' '}Studio MBC — Valentin Marinelli &amp; Clément Barbier
         </p>
         <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "0.6rem", fontWeight: 200, color: "var(--muted)", fontStyle: "normal", letterSpacing: "0.05em" }}>
           Compositeurs pour l&apos;image
