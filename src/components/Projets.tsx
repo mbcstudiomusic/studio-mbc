@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import RevealWrapper from "./RevealWrapper";
 import SectionLabel from "./SectionLabel";
 import { type Project } from "@/data/projets";
@@ -489,14 +489,28 @@ export default function Projets({ projects }: { projects: Project[] }) {
   const [isClosing, setIsClosing] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
 
-  function updateScrollState() {
+  const infiniteProjects = useMemo(() => [...projects, ...projects, ...projects], [projects]);
+
+  // Positionner sur la copie du milieu au montage
+  useEffect(() => {
     const el = carouselRef.current;
     if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 8);
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 8);
+    requestAnimationFrame(() => {
+      el.scrollLeft = el.scrollWidth / 3;
+    });
+  }, [projects]);
+
+  // Saut silencieux quand on approche des bords
+  function handleScroll() {
+    const el = carouselRef.current;
+    if (!el) return;
+    const oneSetWidth = el.scrollWidth / 3;
+    if (el.scrollLeft < oneSetWidth * 0.2) {
+      el.scrollLeft += oneSetWidth;
+    } else if (el.scrollLeft > oneSetWidth * 1.8) {
+      el.scrollLeft -= oneSetWidth;
+    }
   }
 
   function scrollBy(dir: 1 | -1) {
@@ -550,20 +564,18 @@ export default function Projets({ projects }: { projects: Project[] }) {
             {/* Flèche gauche */}
             <button
               onClick={() => scrollBy(-1)}
-              disabled={!canScrollLeft}
               style={{
                 width: "36px",
                 height: "36px",
                 border: "1px solid var(--line)",
                 background: "transparent",
-                cursor: canScrollLeft ? "pointer" : "default",
+                cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: canScrollLeft ? 1 : 0.25,
-                transition: "opacity 0.3s ease, border-color 0.2s ease",
+                transition: "border-color 0.2s ease",
               }}
-              onMouseEnter={(e) => { if (canScrollLeft) e.currentTarget.style.borderColor = "var(--muted)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--muted)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--line)"; }}
             >
               <svg width="12" height="10" viewBox="0 0 12 10" fill="none" stroke="var(--muted)" strokeWidth="1">
@@ -575,20 +587,18 @@ export default function Projets({ projects }: { projects: Project[] }) {
             {/* Flèche droite */}
             <button
               onClick={() => scrollBy(1)}
-              disabled={!canScrollRight}
               style={{
                 width: "36px",
                 height: "36px",
                 border: "1px solid var(--line)",
                 background: "transparent",
-                cursor: canScrollRight ? "pointer" : "default",
+                cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: canScrollRight ? 1 : 0.25,
-                transition: "opacity 0.3s ease, border-color 0.2s ease",
+                transition: "border-color 0.2s ease",
               }}
-              onMouseEnter={(e) => { if (canScrollRight) e.currentTarget.style.borderColor = "var(--muted)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--muted)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--line)"; }}
             >
               <svg width="12" height="10" viewBox="0 0 12 10" fill="none" stroke="var(--muted)" strokeWidth="1">
@@ -607,24 +617,22 @@ export default function Projets({ projects }: { projects: Project[] }) {
           <div style={{
             position: "absolute", left: 0, top: 0, bottom: 0, width: "4vw", zIndex: 1, pointerEvents: "none",
             background: "linear-gradient(to right, var(--surface), transparent)",
-            opacity: canScrollLeft ? 1 : 0, transition: "opacity 0.3s ease",
           }} />
           {/* Fondu droite */}
           <div style={{
             position: "absolute", right: 0, top: 0, bottom: 0, width: "6vw", zIndex: 1, pointerEvents: "none",
             background: "linear-gradient(to left, var(--surface), transparent)",
-            opacity: canScrollRight ? 1 : 0, transition: "opacity 0.3s ease",
           }} />
 
           <div
             ref={carouselRef}
             className="carousel-track"
             style={{ padding: "0 4vw" }}
-            onScroll={updateScrollState}
+            onScroll={handleScroll}
           >
-            {projects.map((project) => (
+            {infiniteProjects.map((project, idx) => (
               <ProjectCard
-                key={`${project.title}-${project.year}`}
+                key={`${idx}-${project.title}-${project.year}`}
                 project={project}
                 onClick={() => openProject(project)}
               />
