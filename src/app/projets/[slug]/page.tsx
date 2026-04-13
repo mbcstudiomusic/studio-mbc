@@ -174,7 +174,7 @@ export default async function ProjetPage({
             width: "260px",
             height: "370px",
             flexShrink: 0,
-            backgroundImage: `url('${project.poster}')`,
+            backgroundImage: `url('${project.image || project.poster}')`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             border: "1px solid var(--line)",
