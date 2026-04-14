@@ -74,6 +74,9 @@ function ProjectCard({ project, onClick }: ProjectCardProps) {
         )}
       </div>
 
+      {/* Barre de finition sous le poster */}
+      <div style={{ height: "1px", backgroundColor: "var(--line)" }} />
+
       {/* Text below poster */}
       <div style={{ padding: "0.75rem" }}>
         <p
