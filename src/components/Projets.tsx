@@ -173,20 +173,30 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  // Bloquer le scroll du body (fix iOS Safari : position fixed + restore scrollY)
+  // Bloquer le scroll du body
+  // Sur mobile (touch) : position:fixed pour iOS Safari sinon le fond défile
+  // Sur desktop : overflow:hidden suffit, pas de position:fixed (évite le saut au démontage)
   useEffect(() => {
+    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
     const scrollY = window.scrollY;
-    document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-    return () => {
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.width = "";
-      window.scrollTo(0, scrollY);
-    };
+    if (isTouchDevice) {
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+      return () => {
+        document.body.style.overflow = "";
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        window.scrollTo(0, scrollY);
+      };
+    } else {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
   }, []);
 
   // touchmove non-passif : empêche le scroll du fond sauf si on est sur le synopsis
@@ -565,7 +575,7 @@ export default function Projets({ projects }: { projects: Project[] }) {
     setTimeout(() => {
       setSelected(null);
       setIsClosing(false);
-      window.history.pushState(null, "", "/#projets");
+      window.history.pushState(null, "", "/");
     }, 400);
   }
 
