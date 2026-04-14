@@ -218,6 +218,7 @@ export default async function ProjetPage({
 
       {/* Content */}
       <div
+        className="project-page-wrapper"
         style={{
           flex: 1,
           padding: "12rem 4vw 6rem",

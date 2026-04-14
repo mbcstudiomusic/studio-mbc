@@ -898,6 +898,9 @@ footer {
   .approche-text p { font-size: 0.82rem !important; line-height: 1.8 !important; }
 
   /* Project page (slug) */
+  .project-page-wrapper {
+    padding-top: 7rem !important;
+  }
   .project-page-content {
     flex-direction: column !important;
     gap: 2rem !important;
@@ -910,6 +913,7 @@ footer {
   .project-poster-portrait {
     width: 50% !important;
     aspect-ratio: 2/3 !important;
+    margin: 0 auto !important;
   }
   .project-poster-landscape {
     aspect-ratio: 16/9 !important;
