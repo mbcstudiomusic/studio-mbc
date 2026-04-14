@@ -4,34 +4,14 @@ import { useState, useRef } from "react";
 import RevealWrapper from "./RevealWrapper";
 import SectionLabel from "./SectionLabel";
 import AudioPlayer from "./AudioPlayer";
+import { type AudioTrack } from "@/data/audio";
 
-const tracks = [
-  {
-    title: "Dessiner Encore - Je suis Charlie ",
-    subtitle: "Théâtre · 2026",
-    src: "/audio/Je suis charlie.wav",
-  },
-  {
-    title: "Le ballon de la liberté ",
-    subtitle: "Série · 2024",
-    src: "/audio/Le ballon de la liberté.wav",
-  },
-  {
-    title: "Albatros & Gorfou - Parades",
-    subtitle: "Documentaire · 2019",
-    src: "/audio/Parades.wav",
-  },
-];
+interface EcouterProps {
+  tracks: AudioTrack[];
+  extraTracks: AudioTrack[];
+}
 
-const extraTracks = [
-  {
-    title: "Petit cousin",
-    subtitle: "Fiction · 2024",
-    src: "/audio/Petit cousin.wav",
-  },
-];
-
-export default function Ecouter() {
+export default function Ecouter({ tracks, extraTracks }: EcouterProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [showExtra, setShowExtra] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);

@@ -6,11 +6,12 @@ import Projets from "@/components/Projets";
 import LeDuo from "@/components/LeDuo";
 import Contact from "@/components/Contact";
 import { getProjects } from "@/data/projets";
+import { getAudioTracks } from "@/data/audio";
 
 export const revalidate = 300; // ISR : revalide toutes les 5 min
 
 export default async function Home() {
-  const projects = await getProjects();
+  const [projects, audioTracks] = await Promise.all([getProjects(), getAudioTracks()]);
 
   return (
     <>
@@ -18,7 +19,7 @@ export default async function Home() {
       <main>
         <Hero />
         <Approche />
-        <Ecouter />
+        <Ecouter tracks={audioTracks.filter((t) => !t.extra)} extraTracks={audioTracks.filter((t) => t.extra)} />
         <Projets projects={projects} />
         <LeDuo />
         <Contact />
