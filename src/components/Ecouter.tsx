@@ -26,7 +26,7 @@ const tracks = [
 const extraTracks = [
   {
     title: "Petit cousin",
-    subtitle: "Court-métrage · 2024",
+    subtitle: "Fiction · 2024",
     src: "/audio/Petit cousin.wav",
   },
 ];
