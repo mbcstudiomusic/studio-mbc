@@ -433,51 +433,51 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
             </>
           )}
 
-          {/* Liens — toujours visibles */}
-          <div style={{ borderTop: "1px solid var(--line)", marginBottom: "1.25rem" }} />
-          <span style={{ ...labelStyle, marginBottom: "0.75rem" }}>Liens</span>
-          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-            {project.trailer ? (
-              <a
-                href={project.trailer}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={linkBtnStyle}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)";
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--line)";
-                }}
-              >
-                ↗ Bande-annonce
-              </a>
-            ) : (
-              <span style={{ ...linkBtnStyle, opacity: 0.3, cursor: "default" }}>↗ Bande-annonce</span>
-            )}
-            {project.imdb ? (
-              <a
-                href={project.imdb}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={linkBtnStyle}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)";
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--line)";
-                }}
-              >
-                ↗ IMDb
-              </a>
-            ) : (
-              <span style={{ ...linkBtnStyle, opacity: 0.3, cursor: "default" }}>↗ IMDb</span>
-            )}
-          </div>
+          {/* Liens — uniquement si renseignés */}
+          {(project.trailer || project.imdb) && (
+            <>
+              <div style={{ borderTop: "1px solid var(--line)", marginBottom: "1.25rem" }} />
+              <span style={{ ...labelStyle, marginBottom: "0.75rem" }}>Liens</span>
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
+                {project.trailer && (
+                  <a
+                    href={project.trailer}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={linkBtnStyle}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
+                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)";
+                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--line)";
+                    }}
+                  >
+                    ↗ Bande-annonce
+                  </a>
+                )}
+                {project.imdb && (
+                  <a
+                    href={project.imdb}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={linkBtnStyle}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
+                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)";
+                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--line)";
+                    }}
+                  >
+                    ↗ IMDb
+                  </a>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
