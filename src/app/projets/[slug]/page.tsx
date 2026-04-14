@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getProjects, getProjectBySlug } from "@/data/projets";
+import { getProjects, getProjectBySlug, type Project } from "@/data/projets";
 
 const SITE_URL = "https://studiombc.fr";
 
@@ -57,8 +57,15 @@ export default async function ProjetPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = await getProjectBySlug(slug);
+  const [project, allProjects] = await Promise.all([
+    getProjectBySlug(slug),
+    getProjects(),
+  ]) as [Project | undefined, Project[]];
   if (!project) notFound();
+
+  const currentIndex = allProjects.findIndex((p) => p.slug === slug);
+  const prevProject = currentIndex > 0 ? allProjects[currentIndex - 1] : null;
+  const nextProject = currentIndex < allProjects.length - 1 ? allProjects[currentIndex + 1] : null;
 
   const composers = [
     {
@@ -159,23 +166,77 @@ export default async function ProjetPage({
         </Link>
       </header>
 
-      {/* Content */}
-      <div
-        className="project-page-content"
+      {/* Barre prev/next — fixe sous le header */}
+      <nav
         style={{
-          flex: 1,
+          position: "fixed",
+          top: "4.25rem",
+          left: 0,
+          right: 0,
+          zIndex: 9,
+          padding: "0.6rem 4vw",
           display: "flex",
           alignItems: "center",
-          padding: "10rem 4vw 6rem",
-          gap: "5rem",
+          justifyContent: "space-between",
+          borderBottom: "1px solid var(--line)",
+          backgroundColor: "rgba(8,9,8,0.85)",
+          backdropFilter: "blur(8px)",
+        }}
+      >
+        {prevProject ? (
+          <Link
+            href={`/projets/${prevProject.slug}`}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              textDecoration: "none",
+              gap: "0.2rem",
+            }}
+          >
+            <span style={{ fontFamily: "var(--font-label)", fontSize: "0.55rem", fontWeight: 200, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--muted)", transition: "color 0.2s" }}>← Précédent</span>
+            <span className="project-nav-label" style={{ fontFamily: "var(--font-title)", fontSize: "0.85rem", fontWeight: 300, color: "var(--text)" }}>{prevProject.title}</span>
+          </Link>
+        ) : <span />}
+
+        {nextProject ? (
+          <Link
+            href={`/projets/${nextProject.slug}`}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              textDecoration: "none",
+              gap: "0.2rem",
+            }}
+          >
+            <span style={{ fontFamily: "var(--font-label)", fontSize: "0.55rem", fontWeight: 200, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--muted)", transition: "color 0.2s" }}>Suivant →</span>
+            <span className="project-nav-label" style={{ fontFamily: "var(--font-title)", fontSize: "0.85rem", fontWeight: 300, color: "var(--text)" }}>{nextProject.title}</span>
+          </Link>
+        ) : <span />}
+      </nav>
+
+      {/* Content */}
+      <div
+        style={{
+          flex: 1,
+          padding: "12rem 4vw 6rem",
           maxWidth: "1100px",
           margin: "0 auto",
           width: "100%",
         }}
       >
+        <div
+          className="project-page-content"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "5rem",
+          }}
+        >
         {/* Poster */}
         <div
-          className="project-poster"
+          className={`project-poster ${project.image ? "project-poster-portrait" : "project-poster-landscape"}`}
           style={{
             width: "260px",
             height: "370px",
@@ -326,6 +387,7 @@ export default async function ProjetPage({
               </div>
             );
           })()}
+        </div>
         </div>
       </div>
     </main>

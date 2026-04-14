@@ -901,12 +901,19 @@ footer {
   .project-page-content {
     flex-direction: column !important;
     gap: 2rem !important;
-    padding-top: 6rem !important;
     align-items: flex-start !important;
   }
   .project-poster {
     width: 100% !important;
-    height: 200px !important;
-    background-position: center top !important;
+    height: auto !important;
+  }
+  .project-poster-portrait {
+    aspect-ratio: 2/3 !important;
+  }
+  .project-poster-landscape {
+    aspect-ratio: 16/9 !important;
+  }
+  .project-nav-label {
+    display: none !important;
   }
 }
