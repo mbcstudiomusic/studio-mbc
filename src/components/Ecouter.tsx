@@ -23,8 +23,17 @@ const tracks = [
   },
 ];
 
+const extraTracks = [
+  {
+    title: "Petit cousin",
+    subtitle: "Court-métrage · 2024",
+    src: "/audio/Petit cousin.wav",
+  },
+];
+
 export default function Ecouter() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [showExtra, setShowExtra] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
   function handlePlay(index: number) {
@@ -63,6 +72,41 @@ export default function Ecouter() {
                 </RevealWrapper>
               ))}
             </div>
+
+            {/* Bouton "Écouter plus" — mobile uniquement */}
+            {!showExtra && (
+              <button
+                className="ecouter-more-btn"
+                onClick={() => setShowExtra(true)}
+                style={{
+                  display: "none", // affiché via CSS sur mobile
+                  width: "100%",
+                  marginTop: "1.25rem",
+                  marginBottom: "0.5rem",
+                  padding: "0.75rem",
+                  background: "transparent",
+                  border: "1px solid var(--line)",
+                  color: "var(--muted)",
+                  fontFamily: "var(--font-label)",
+                  fontSize: "8px",
+                  fontWeight: 200,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  transition: "color 0.2s, border-color 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "var(--text)";
+                  e.currentTarget.style.borderColor = "var(--muted)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "var(--muted)";
+                  e.currentTarget.style.borderColor = "var(--line)";
+                }}
+              >
+                + Écouter plus
+              </button>
+            )}
 
             {/* Last separator */}
             <div style={{ borderTop: "1px solid var(--line)", marginTop: "0", paddingTop: "2.5rem" }} />
@@ -137,8 +181,24 @@ export default function Ecouter() {
             </RevealWrapper>
           </div>
 
-          {/* COLONNE DROITE — réservée pour 3 nouveaux extraits */}
-          <div />
+          {/* COLONNE DROITE — extraits supplémentaires */}
+          <div className={showExtra ? "ecouter-extra-col ecouter-extra-visible" : "ecouter-extra-col"}>
+            {extraTracks.map((track, i) => {
+              const index = tracks.length + i;
+              return (
+                <RevealWrapper key={track.src} delay={160 + i * 100}>
+                  <AudioPlayer
+                    index={index}
+                    title={track.title}
+                    subtitle={track.subtitle}
+                    src={track.src}
+                    isActive={activeIndex === index}
+                    onPlay={() => handlePlay(index)}
+                  />
+                </RevealWrapper>
+              );
+            })}
+          </div>
 
         </div>
       </div>
