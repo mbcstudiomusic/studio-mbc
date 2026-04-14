@@ -133,7 +133,7 @@ const jsonLd = {
       email: "contact@studiombc.fr",
       worksFor: { "@id": `${SITE_URL}/#studio-mbc` },
       sameAs: [
-        "https://www.instagram.com/valval13/",
+        "https://www.instagram.com/valentin_marinelli_",
         "https://fr.linkedin.com/in/valentin-marinelli",
         "https://www.imdb.com/fr/name/nm8016007/",
         "https://www.instagram.com/mbcstudiomusic/",

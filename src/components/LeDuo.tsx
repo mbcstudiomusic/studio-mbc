@@ -94,7 +94,7 @@ export default function LeDuo() {
 
             {/* Réseaux */}
             <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.75rem", justifyContent: "center" }}>
-              {socialLink("https://www.instagram.com/valval13/", "Instagram Valentin", <InstagramIcon />)}
+              {socialLink("https://www.instagram.com/valentin_marinelli_", "Instagram Valentin", <InstagramIcon />)}
               {socialLink("https://fr.linkedin.com/in/valentin-marinelli", "LinkedIn Valentin", <LinkedInIcon />)}
               {socialLink("https://www.imdb.com/fr/name/nm8016007/", "IMDb Valentin", <ImdbIcon />)}
             </div>
