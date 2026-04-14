@@ -134,9 +134,8 @@ const jsonLd = {
       worksFor: { "@id": `${SITE_URL}/#studio-mbc` },
       sameAs: [
         "https://www.instagram.com/valentin_marinelli_",
+        "https://www.imdb.com/name/nm8016007/",
         "https://fr.linkedin.com/in/valentin-marinelli",
-        "https://www.imdb.com/fr/name/nm8016007/",
-        "https://www.instagram.com/mbcstudiomusic/",
       ],
       address: {
         "@type": "PostalAddress",
@@ -161,6 +160,8 @@ const jsonLd = {
       worksFor: { "@id": `${SITE_URL}/#studio-mbc` },
       sameAs: [
         "https://www.instagram.com/mbcstudiomusic/",
+        "https://www.imdb.com/name/nm8667331/",
+        "https://fr.linkedin.com/in/clement-barbier",
       ],
       address: {
         "@type": "PostalAddress",
