@@ -172,41 +172,24 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
   const touchStartOnSynopsis = useRef<boolean>(false);
   const synopsisRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setVisible(true));
     return () => cancelAnimationFrame(id);
   }, []);
 
-  // Bloquer le scroll du body
-  // Sur mobile (touch) : position:fixed pour iOS Safari sinon le fond défile
-  // Sur desktop : overflow:hidden suffit, pas de position:fixed (évite le saut au démontage)
+  // Bloquer le scroll du body : overflow:hidden suffit (desktop + mobile)
+  // Pas de position:fixed → pas de restauration de scroll → pas de saut à la fermeture
   useEffect(() => {
-    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
-    const scrollY = window.scrollY;
-    if (isTouchDevice) {
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = "100%";
-      return () => {
-        document.body.style.overflow = "";
-        document.body.style.position = "";
-        document.body.style.top = "";
-        document.body.style.width = "";
-        window.scrollTo(0, scrollY);
-      };
-    } else {
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
   }, []);
 
-  // touchmove non-passif : empêche le scroll du fond sauf si on est sur le synopsis
+  // touchmove non-passif sur l'overlay entier (couvre tout l'écran sur iOS Safari)
+  // Empêche le scroll du fond pour tous les touches, sauf sur le synopsis
   useEffect(() => {
-    const el = innerRef.current;
+    const el = overlayRef.current;
     if (!el) return;
     function onTouchMove(e: TouchEvent) {
       if (synopsisRef.current?.contains(e.target as Node)) return;
@@ -231,6 +214,7 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
 
   return (
     <div
+      ref={overlayRef}
       onClick={onClose}
       className="modal-overlay"
       style={{
