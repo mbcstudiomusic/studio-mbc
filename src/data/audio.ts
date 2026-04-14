@@ -5,7 +5,6 @@ export interface AudioTrack {
   title: string;
   subtitle: string;
   src: string;
-  extra: boolean;
 }
 
 function parseAudioCSV(content: string, sep: string): AudioTrack[] {
@@ -16,7 +15,6 @@ function parseAudioCSV(content: string, sep: string): AudioTrack[] {
   const titleIdx = headers.indexOf("title");
   const subtitleIdx = headers.indexOf("subtitle");
   const srcIdx = headers.indexOf("src");
-  const extraIdx = headers.indexOf("extra");
 
   const tracks: AudioTrack[] = [];
   for (let i = 1; i < lines.length; i++) {
@@ -27,7 +25,6 @@ function parseAudioCSV(content: string, sep: string): AudioTrack[] {
       title: cols[titleIdx]?.trim() ?? "",
       subtitle: cols[subtitleIdx]?.trim() ?? "",
       src,
-      extra: cols[extraIdx]?.trim() === "true",
     });
   }
   return tracks;

@@ -8,13 +8,22 @@ import { type AudioTrack } from "@/data/audio";
 
 interface EcouterProps {
   tracks: AudioTrack[];
-  extraTracks: AudioTrack[];
 }
 
-export default function Ecouter({ tracks, extraTracks }: EcouterProps) {
+export default function Ecouter({ tracks }: EcouterProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [showExtra, setShowExtra] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+
+  // Desktop : split automatique en 2 colonnes équilibrées
+  // colSize augmente de 3 en 3 : ≤6 → 3/col, ≤8 → 4/col, ≤10 → 5/col…
+  const colSize = Math.max(3, Math.ceil(tracks.length / 2));
+  const leftTracks = tracks.slice(0, colSize);
+  const rightTracks = tracks.slice(colSize);
+
+  // Mobile : 3 premiers visibles, le reste derrière "Écouter plus"
+  const mobilePrimary = tracks.slice(0, 3);
+  const mobileExtra = tracks.slice(3);
 
   function handlePlay(index: number) {
     sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -39,7 +48,7 @@ export default function Ecouter({ tracks, extraTracks }: EcouterProps) {
 
 
             <div>
-              {tracks.map((track, i) => (
+              {mobilePrimary.map((track, i) => (
                 <RevealWrapper key={track.src} delay={160 + i * 100}>
                   <AudioPlayer
                     index={i}
@@ -54,26 +63,28 @@ export default function Ecouter({ tracks, extraTracks }: EcouterProps) {
             </div>
 
             {/* Extra tracks — mobile uniquement, après le 3e morceau */}
-            <div className={showExtra ? "ecouter-extra-mobile ecouter-extra-mobile-visible" : "ecouter-extra-mobile"}>
-              {extraTracks.map((track, i) => {
-                const index = tracks.length + i;
-                return (
-                  <RevealWrapper key={`mobile-${track.src}`} delay={160}>
-                    <AudioPlayer
-                      index={index}
-                      title={track.title}
-                      subtitle={track.subtitle}
-                      src={track.src}
-                      isActive={activeIndex === index}
-                      onPlay={() => handlePlay(index)}
-                    />
-                  </RevealWrapper>
-                );
-              })}
-            </div>
+            {mobileExtra.length > 0 && (
+              <div className={showExtra ? "ecouter-extra-mobile ecouter-extra-mobile-visible" : "ecouter-extra-mobile"}>
+                {mobileExtra.map((track, i) => {
+                  const index = 3 + i;
+                  return (
+                    <RevealWrapper key={`mobile-${track.src}`} delay={160}>
+                      <AudioPlayer
+                        index={index}
+                        title={track.title}
+                        subtitle={track.subtitle}
+                        src={track.src}
+                        isActive={activeIndex === index}
+                        onPlay={() => handlePlay(index)}
+                      />
+                    </RevealWrapper>
+                  );
+                })}
+              </div>
+            )}
 
-            {/* Bouton "Écouter plus" — mobile uniquement */}
-            {!showExtra && (
+            {/* Bouton "Écouter plus" — mobile uniquement, si morceaux cachés */}
+            {mobileExtra.length > 0 && !showExtra && (
               <button
                 className="ecouter-more-btn"
                 onClick={() => setShowExtra(true)}
@@ -180,10 +191,10 @@ export default function Ecouter({ tracks, extraTracks }: EcouterProps) {
             </RevealWrapper>
           </div>
 
-          {/* COLONNE DROITE — extraits supplémentaires */}
-          <div className={showExtra ? "ecouter-extra-col ecouter-extra-visible" : "ecouter-extra-col"} style={{ paddingTop: "calc(3rem + 15px)" }}>
-            {extraTracks.map((track, i) => {
-              const index = tracks.length + i;
+          {/* COLONNE DROITE — split automatique */}
+          <div className="ecouter-extra-col" style={{ paddingTop: "calc(3rem + 15px)" }}>
+            {rightTracks.map((track, i) => {
+              const index = colSize + i;
               return (
                 <RevealWrapper key={track.src} delay={160 + i * 100}>
                   <AudioPlayer

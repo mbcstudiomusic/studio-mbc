@@ -19,7 +19,7 @@ export default async function Home() {
       <main>
         <Hero />
         <Approche />
-        <Ecouter tracks={audioTracks.filter((t) => !t.extra)} extraTracks={audioTracks.filter((t) => t.extra)} />
+        <Ecouter tracks={audioTracks} />
         <Projets projects={projects} />
         <LeDuo />
         <Contact />
