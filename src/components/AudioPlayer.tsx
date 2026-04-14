@@ -131,6 +131,18 @@ export default function AudioPlayer({ index, title, subtitle, src, isActive, onP
     drawWaveform();
   }, [drawWaveform, waveformReady]);
 
+  // Redraw quand le canvas devient visible (ex: "Écouter plus" sur mobile)
+  // Le canvas passe de offsetWidth=0 à une vraie largeur → ResizeObserver le détecte
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const observer = new ResizeObserver(() => {
+      if (barsRef.current.length) drawWaveform();
+    });
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, [drawWaveform]);
+
   // Animation loop only while playing
   useEffect(() => {
     if (!isPlaying) return;
