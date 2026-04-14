@@ -136,6 +136,7 @@ const jsonLd = {
         "https://www.instagram.com/valentin_marinelli_",
         "https://www.imdb.com/name/nm8016007/",
         "https://fr.linkedin.com/in/valentin-marinelli",
+        "https://en.unifrance.org/directories/person/422557/valentin-marinelli",
       ],
       address: {
         "@type": "PostalAddress",
@@ -162,6 +163,7 @@ const jsonLd = {
         "https://www.instagram.com/clem_barb_/",
         "https://www.imdb.com/name/nm8667331/",
         "https://fr.linkedin.com/in/clément-barbier-b0022359",
+        "https://en.unifrance.org/directories/person/409749/clement-barbier",
       ],
       address: {
         "@type": "PostalAddress",
