@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getProjects, getProjectBySlug, type Project } from "@/data/projets";
+import { getLinkMeta } from "@/lib/linkMeta";
 
 const SITE_URL = "https://studiombc.fr";
 
@@ -370,19 +371,16 @@ export default async function ProjetPage({
                 {divider}
                 <span style={{ ...label, marginBottom: "0.75rem" }}>Liens</span>
                 <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-                  {project.trailer ? (
-                    <a href={project.trailer} target="_blank" rel="noopener noreferrer" style={linkBtn}>
-                      ↗ Bande-annonce
-                    </a>
-                  ) : (
-                    <span style={{ ...linkBtn, opacity: 0.3, cursor: "default" }}>↗ Bande-annonce</span>
-                  )}
-                  {project.imdb ? (
-                    <a href={project.imdb} target="_blank" rel="noopener noreferrer" style={linkBtn}>
-                      ↗ IMDb
-                    </a>
-                  ) : (
-                    <span style={{ ...linkBtn, opacity: 0.3, cursor: "default" }}>↗ IMDb</span>
+                  {[project.trailer, project.imdb].filter(Boolean).map((url) => {
+                    const { label: linkLabel, icon } = getLinkMeta(url!);
+                    return (
+                      <a key={url} href={url!} target="_blank" rel="noopener noreferrer" style={linkBtn}>
+                        {icon}{linkLabel}
+                      </a>
+                    );
+                  })}
+                  {!project.trailer && !project.imdb && (
+                    <span style={{ ...linkBtn, opacity: 0.3, cursor: "default" }}>— Aucun lien disponible</span>
                   )}
                 </div>
               </div>

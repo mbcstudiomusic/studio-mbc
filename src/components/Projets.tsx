@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import RevealWrapper from "./RevealWrapper";
 import SectionLabel from "./SectionLabel";
 import { type Project } from "@/data/projets";
+import { getLinkMeta } from "@/lib/linkMeta";
 
 interface ProjectCardProps {
   project: Project;
@@ -486,42 +487,28 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
               <div style={{ borderTop: "1px solid var(--line)", marginBottom: "1.25rem" }} />
               <span style={{ ...labelStyle, marginBottom: "0.75rem" }}>Liens</span>
               <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
-                {project.trailer && (
-                  <a
-                    href={project.trailer}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ ...linkBtnStyle, color: "var(--text)", borderColor: "var(--muted)" }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)";
-                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--accent)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
-                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
-                    }}
-                  >
-                    ↗ Bande-annonce
-                  </a>
-                )}
-                {project.imdb && (
-                  <a
-                    href={project.imdb}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ ...linkBtnStyle, color: "var(--text)", borderColor: "var(--muted)" }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)";
-                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--accent)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
-                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
-                    }}
-                  >
-                    ↗ IMDb
-                  </a>
-                )}
+                {[project.trailer, project.imdb].filter(Boolean).map((url) => {
+                  const { label, icon } = getLinkMeta(url!);
+                  return (
+                    <a
+                      key={url}
+                      href={url!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ ...linkBtnStyle, color: "var(--text)", borderColor: "var(--muted)" }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)";
+                        (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--accent)";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
+                        (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
+                      }}
+                    >
+                      {icon}{label}
+                    </a>
+                  );
+                })}
               </div>
             </>
           )}
