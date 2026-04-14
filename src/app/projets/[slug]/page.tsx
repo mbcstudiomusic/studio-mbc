@@ -231,7 +231,7 @@ export default async function ProjetPage({
           className="project-page-content"
           style={{
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             gap: "5rem",
           }}
         >
