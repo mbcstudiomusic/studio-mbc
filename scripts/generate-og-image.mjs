@@ -44,7 +44,7 @@ const svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
     font-size="52"
     fill="white"
     letter-spacing="2"
-  >Valentin MARINELLI &amp; Clément BARBIER</text>
+  >Valentin&#160;<tspan font-weight="bold">MARINELLI</tspan>&#160;<tspan font-weight="300" font-style="italic" fill="rgba(255,255,255,0.55)">&amp;</tspan>&#160;Clément&#160;<tspan font-weight="bold">BARBIER</tspan></text>
 
   <!-- Ligne 2 : sous-titre -->
   <text
