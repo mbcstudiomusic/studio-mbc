@@ -8,19 +8,26 @@ export interface AudioTrack {
   extra: boolean;
 }
 
-function parseAudioCSV(content: string): AudioTrack[] {
+function parseAudioCSV(content: string, sep: string): AudioTrack[] {
   const lines = content.split(/\r?\n/).filter((l) => l.trim());
   if (lines.length < 2) return [];
 
+  const headers = lines[0].split(sep).map((h) => h.trim());
+  const titleIdx = headers.indexOf("title");
+  const subtitleIdx = headers.indexOf("subtitle");
+  const srcIdx = headers.indexOf("src");
+  const extraIdx = headers.indexOf("extra");
+
   const tracks: AudioTrack[] = [];
   for (let i = 1; i < lines.length; i++) {
-    const [title, subtitle, src, extra] = lines[i].split(";");
+    const cols = lines[i].split(sep);
+    const src = cols[srcIdx]?.trim();
     if (!src) continue;
     tracks.push({
-      title: title?.trim() ?? "",
-      subtitle: subtitle?.trim() ?? "",
-      src: src?.trim() ?? "",
-      extra: extra?.trim() === "true",
+      title: cols[titleIdx]?.trim() ?? "",
+      subtitle: cols[subtitleIdx]?.trim() ?? "",
+      src,
+      extra: cols[extraIdx]?.trim() === "true",
     });
   }
   return tracks;
@@ -35,7 +42,7 @@ export async function getAudioTracks(): Promise<AudioTrack[]> {
       const res = await fetch(url, { next: { revalidate: 300 } });
       if (!res.ok) throw new Error(`Google Sheets fetch failed: ${res.status}`);
       const text = await res.text();
-      return parseAudioCSV(text);
+      return parseAudioCSV(text, ",");
     } catch (err) {
       console.warn("Google Sheets audio fetch failed, falling back to local CSV:", err);
     }
@@ -43,5 +50,5 @@ export async function getAudioTracks(): Promise<AudioTrack[]> {
 
   const csvPath = path.join(process.cwd(), "content", "audio.csv");
   const content = fs.readFileSync(csvPath, "utf-8");
-  return parseAudioCSV(content);
+  return parseAudioCSV(content, ";");
 }
