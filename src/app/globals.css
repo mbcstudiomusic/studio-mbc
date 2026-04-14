@@ -908,6 +908,7 @@ footer {
     height: auto !important;
   }
   .project-poster-portrait {
+    width: 50% !important;
     aspect-ratio: 2/3 !important;
   }
   .project-poster-landscape {
