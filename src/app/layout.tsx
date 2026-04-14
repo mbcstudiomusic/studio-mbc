@@ -159,9 +159,9 @@ const jsonLd = {
       email: "contact@studiombc.fr",
       worksFor: { "@id": `${SITE_URL}/#studio-mbc` },
       sameAs: [
-        "https://www.instagram.com/mbcstudiomusic/",
+        "https://www.instagram.com/clem_barb_/",
         "https://www.imdb.com/name/nm8667331/",
-        "https://fr.linkedin.com/in/clement-barbier",
+        "https://fr.linkedin.com/in/clément-barbier-b0022359",
       ],
       address: {
         "@type": "PostalAddress",
