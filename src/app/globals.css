@@ -788,7 +788,8 @@ footer {
   /* Écouter — single column, compact */
   .ecouter-grid { grid-template-columns: 1fr !important; }
   .ecouter-extra-col { display: none !important; }
-  .ecouter-extra-col.ecouter-extra-visible { display: block !important; }
+  .ecouter-extra-mobile { display: none; }
+  .ecouter-extra-mobile.ecouter-extra-mobile-visible { display: block !important; }
   .ecouter-more-btn { display: block !important; }
   .streaming-links { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 1rem !important; }
   .ecouter-track { padding: 0.9rem 0 !important; }

@@ -73,6 +73,25 @@ export default function Ecouter() {
               ))}
             </div>
 
+            {/* Extra tracks — mobile uniquement, après le 3e morceau */}
+            <div className={showExtra ? "ecouter-extra-mobile ecouter-extra-mobile-visible" : "ecouter-extra-mobile"}>
+              {extraTracks.map((track, i) => {
+                const index = tracks.length + i;
+                return (
+                  <RevealWrapper key={`mobile-${track.src}`} delay={160}>
+                    <AudioPlayer
+                      index={index}
+                      title={track.title}
+                      subtitle={track.subtitle}
+                      src={track.src}
+                      isActive={activeIndex === index}
+                      onPlay={() => handlePlay(index)}
+                    />
+                  </RevealWrapper>
+                );
+              })}
+            </div>
+
             {/* Bouton "Écouter plus" — mobile uniquement */}
             {!showExtra && (
               <button
@@ -182,7 +201,7 @@ export default function Ecouter() {
           </div>
 
           {/* COLONNE DROITE — extraits supplémentaires */}
-          <div className={showExtra ? "ecouter-extra-col ecouter-extra-visible" : "ecouter-extra-col"}>
+          <div className={showExtra ? "ecouter-extra-col ecouter-extra-visible" : "ecouter-extra-col"} style={{ paddingTop: "calc(3rem + 15px)" }}>
             {extraTracks.map((track, i) => {
               const index = tracks.length + i;
               return (
