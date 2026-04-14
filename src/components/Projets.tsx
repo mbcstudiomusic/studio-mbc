@@ -515,7 +515,7 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
                         (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
                       }}
                     >
-                      ↗ {label}
+                      {label}
                     </a>
                   );
                 })}
