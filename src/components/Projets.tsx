@@ -468,7 +468,7 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
           )}
 
           <span style={{ ...labelStyle, fontWeight: 400 }}>Musique</span>
-          <span style={{ ...valueStyle, marginBottom: "1.5rem" }}>Valentin Marinelli &amp; Clément Barbier</span>
+          <span style={{ ...valueStyle, marginBottom: "1.5rem" }}>Valentin <span style={{ textTransform: "uppercase" }}>Marinelli</span> &amp; Clément <span style={{ textTransform: "uppercase" }}>Barbier</span></span>
 
           {/* Distinctions — si remplies */}
           {project.distinctions && (
