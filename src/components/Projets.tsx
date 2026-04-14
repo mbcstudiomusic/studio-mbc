@@ -498,7 +498,7 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
               <span style={{ ...labelStyle, marginBottom: "0.75rem" }}>Liens</span>
               <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
                 {[project.trailer, project.imdb].filter(Boolean).map((url) => {
-                  const { label, icon } = getLinkMeta(url!);
+                  const { label } = getLinkMeta(url!);
                   return (
                     <a
                       key={url}
@@ -515,7 +515,7 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
                         (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
                       }}
                     >
-                      {icon}{label}
+                      ↗ {label}
                     </a>
                   );
                 })}

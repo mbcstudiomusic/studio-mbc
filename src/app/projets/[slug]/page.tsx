@@ -372,10 +372,10 @@ export default async function ProjetPage({
                 <span style={{ ...label, marginBottom: "0.75rem" }}>Liens</span>
                 <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
                   {[project.trailer, project.imdb].filter(Boolean).map((url) => {
-                    const { label: linkLabel, icon } = getLinkMeta(url!);
+                    const { label: linkLabel } = getLinkMeta(url!);
                     return (
                       <a key={url} href={url!} target="_blank" rel="noopener noreferrer" style={linkBtn}>
-                        {icon}{linkLabel}
+                        ↗ {linkLabel}
                       </a>
                     );
                   })}
