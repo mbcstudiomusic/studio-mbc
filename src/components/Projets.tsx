@@ -162,11 +162,54 @@ const linkBtnStyle: React.CSSProperties = {
 function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
   const initial = project.title.charAt(0).toUpperCase();
   const [visible, setVisible] = useState(false);
+  const touchStartY = useRef<number>(0);
+  const touchStartOnSynopsis = useRef<boolean>(false);
+  const synopsisRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setVisible(true));
     return () => cancelAnimationFrame(id);
   }, []);
+
+  // Bloquer le scroll du body (fix iOS Safari : position fixed + restore scrollY)
+  useEffect(() => {
+    const scrollY = window.scrollY;
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
+
+  // touchmove non-passif : empêche le scroll du fond sauf si on est sur le synopsis
+  useEffect(() => {
+    const el = innerRef.current;
+    if (!el) return;
+    function onTouchMove(e: TouchEvent) {
+      if (synopsisRef.current?.contains(e.target as Node)) return;
+      e.preventDefault();
+    }
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    return () => el.removeEventListener("touchmove", onTouchMove);
+  }, []);
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartY.current = e.touches[0].clientY;
+    touchStartOnSynopsis.current = !!synopsisRef.current?.contains(e.target as Node);
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (touchStartOnSynopsis.current) return;
+    const delta = touchStartY.current - e.changedTouches[0].clientY;
+    if (delta > 80) onClose();
+  }
 
   const active = visible && !isClosing;
 
@@ -188,7 +231,10 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
       }}
     >
       <div
+        ref={innerRef}
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         className="modal-inner"
         style={{
           display: "grid",
@@ -367,6 +413,7 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
           {/* Synopsis */}
           <span style={labelStyle}>Synopsis</span>
           <div
+            ref={synopsisRef}
             className="modal-synopsis"
             style={{
               maxHeight: "160px",
