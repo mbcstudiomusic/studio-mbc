@@ -444,14 +444,14 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
                     href={project.trailer}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={linkBtnStyle}
+                    style={{ ...linkBtnStyle, color: "var(--text)", borderColor: "var(--muted)" }}
                     onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
-                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
+                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)";
+                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--accent)";
                     }}
                     onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)";
-                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--line)";
+                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
+                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
                     }}
                   >
                     ↗ Bande-annonce
@@ -462,14 +462,14 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
                     href={project.imdb}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={linkBtnStyle}
+                    style={{ ...linkBtnStyle, color: "var(--text)", borderColor: "var(--muted)" }}
                     onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
-                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
+                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)";
+                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--accent)";
                     }}
                     onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--muted)";
-                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--line)";
+                      (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
+                      (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--muted)";
                     }}
                   >
                     ↗ IMDb
