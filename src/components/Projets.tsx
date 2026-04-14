@@ -33,10 +33,12 @@ function ProjectCard({ project, onClick }: ProjectCardProps) {
         }}
       >
         <div
+          role="img"
+          aria-label={`${project.title} — musique originale de Valentin Marinelli & Clément Barbier`}
           style={{
             width: "100%",
             height: "100%",
-            backgroundImage: `url('${project.poster}')`,
+            backgroundImage: `url('${project.poster.replace(/\.(jpg|jpeg)$/i, ".webp")}')`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             filter: hovered ? "brightness(0.45)" : "brightness(0.8)",
@@ -308,7 +310,7 @@ function ProjectOverlay({ project, onClose, isClosing }: OverlayProps) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={project.image}
+                src={project.image.replace(/\.(jpg|jpeg)$/i, ".webp")}
                 alt={project.title}
                 style={{
                   maxWidth: "100%",

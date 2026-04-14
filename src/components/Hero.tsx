@@ -6,10 +6,12 @@ export default function Hero() {
       {/* Background photo */}
       <div
         className="hero-bg"
+        role="img"
+        aria-label="Valentin Marinelli et Clément Barbier, compositeurs de musique à l'image, dans leur studio parisien"
         style={{
           position: "absolute",
           inset: 0,
-          backgroundImage: "url('/images/hero.jpg')",
+          backgroundImage: "url('/images/hero.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           opacity: 0.55,

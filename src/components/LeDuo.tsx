@@ -77,7 +77,7 @@ export default function LeDuo() {
                 style={{
                   width: "min(353px, 100%)",
                   aspectRatio: "141/200",
-                  backgroundImage: "url('/images/valentin.jpg')",
+                  backgroundImage: "url('/images/valentin.webp')",
                   backgroundSize: "cover",
                   backgroundPosition: "center top",
                   backgroundColor: "#080908",
@@ -115,7 +115,7 @@ export default function LeDuo() {
                 style={{
                   width: "min(353px, 100%)",
                   aspectRatio: "141/200",
-                  backgroundImage: "url('/images/clement.jpg')",
+                  backgroundImage: "url('/images/clement.webp')",
                   backgroundSize: "cover",
                   backgroundPosition: "center top",
                   backgroundColor: "#080908",
