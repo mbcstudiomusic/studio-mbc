@@ -104,6 +104,12 @@ export const metadata: Metadata = {
       "Valentin Marinelli & Clément Barbier — Compositeurs de musique à l'image basés à Paris. Cinéma, séries, théâtre, documentaire.",
     images: [`${SITE_URL}/images/og-image.jpg`],
   },
+  icons: {
+    icon: [
+      { url: '/icon.png', sizes: '512x512', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+  },
   verification: {
     google: "zbuXDxSK4xBol5gsWZDaByaZU4p7KZ-O4t0Fhr3fzLU",
   },
