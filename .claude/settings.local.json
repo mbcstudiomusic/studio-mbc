@@ -78,7 +78,12 @@
       "Bash(xargs -I {} basename {})",
       "Bash(git -C /Users/studiombc/Desktop/studio-mbc/studio-mbc log --all --pretty=format:\"%h %s\" -- dev.sh)",
       "Bash(git -C /Users/studiombc/Desktop/studio-mbc/studio-mbc log --oneline -- reference.html)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(vercel whoami:*)",
+      "Bash(du -sh public/audio/*.wav)",
+      "Bash(afconvert --help)",
+      "Bash(brew list:*)",
+      "Bash(afconvert \"public/audio/Petit cousin.wav\" /tmp/test.m4a -f m4af -d aac -b 192000)"
     ]
   }
 }
