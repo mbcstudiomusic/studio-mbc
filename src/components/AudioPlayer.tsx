@@ -181,9 +181,13 @@ export default function AudioPlayer({ index, title, subtitle, src, isActive, onP
       audio.pause();
       setIsPlaying(false);
     } else {
-      onPlay(); // notify parent to stop others
-      audio.play().catch(() => {});
-      setIsPlaying(true);
+      onPlay();
+      audio.play().then(() => {
+        setIsPlaying(true);
+      }).catch((err) => {
+        console.error("Audio play error:", err);
+        setIsPlaying(false);
+      });
     }
   };
 

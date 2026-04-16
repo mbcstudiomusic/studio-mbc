@@ -97,7 +97,16 @@
       "Bash(node -e \"require\\('lamejs'\\); console.log\\('lamejs ok'\\)\")",
       "Bash(node /tmp/convert_mp3.js)",
       "Bash(node -e \"const l = require\\('@breezystack/lamejs'\\); console.log\\('ok', typeof l.Mp3Encoder\\)\")",
-      "Bash(du -sh /Users/studiombc/Desktop/studio-mbc/studio-mbc/public/audio/*.mp3)"
+      "Bash(du -sh /Users/studiombc/Desktop/studio-mbc/studio-mbc/public/audio/*.mp3)",
+      "Bash(mv \"Je suis charlie.mp3\" \"je-suis-charlie.mp3\")",
+      "Bash(mv \"Le ballon de la liberté.mp3\" \"le-ballon-de-la-liberte.mp3\")",
+      "Bash(mv \"Parades.mp3\" \"parades.mp3\")",
+      "Bash(mv \"Petit cousin.mp3\" \"petit-cousin.mp3\")",
+      "Bash(ls *.mp3)",
+      "Bash(mv \"Je suis charlie.json\" \"je-suis-charlie.json\")",
+      "Bash(mv \"Le ballon de la liberté.json\" \"le-ballon-de-la-liberte.json\")",
+      "Bash(mv \"Parades.json\" \"parades.json\")",
+      "Bash(mv \"Petit cousin.json\" \"petit-cousin.json\")"
     ]
   }
 }
