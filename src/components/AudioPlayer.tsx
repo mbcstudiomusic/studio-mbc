@@ -22,41 +22,25 @@ export default function AudioPlayer({ index, title, subtitle, src, isActive, onP
   const barsRef = useRef<number[]>([]);
   const [waveformReady, setWaveformReady] = useState(false);
 
-  // Analyze actual audio file for real waveform + get duration
+  // Load pre-generated waveform JSON (duration + bars)
   useEffect(() => {
     let cancelled = false;
 
-    async function analyzeAudio() {
+    async function loadWaveform() {
+      // Dériver le chemin JSON depuis le src audio
+      // ex: /audio/Petit cousin.m4a → /audio/waveforms/Petit cousin.json
+      const jsonPath = src.replace(/\/audio\/(.+)\.[^.]+$/, "/audio/waveforms/$1.json");
+
       try {
-        const res = await fetch(src);
-        const arrayBuffer = await res.arrayBuffer();
-        const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        const audioCtx = new AudioCtx();
-        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-        if (cancelled) { audioCtx.close(); return; }
-
-        // Set duration from decoded buffer (reliable)
-        if (!cancelled) setDuration(audioBuffer.duration);
-
-        const channelData = audioBuffer.getChannelData(0);
-        const barCount = 200;
-        const blockSize = Math.floor(channelData.length / barCount);
-        const bars: number[] = [];
-
-        for (let i = 0; i < barCount; i++) {
-          let sum = 0;
-          for (let j = 0; j < blockSize; j++) {
-            sum += Math.abs(channelData[i * blockSize + j]);
-          }
-          bars.push(sum / blockSize);
-        }
-
-        const max = Math.max(...bars, 0.001);
-        barsRef.current = bars.map((b) => b / max);
-        audioCtx.close();
-        if (!cancelled) setWaveformReady(true);
+        const res = await fetch(jsonPath);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: { duration: number; bars: number[] } = await res.json();
+        if (cancelled) return;
+        setDuration(data.duration);
+        barsRef.current = data.bars;
+        setWaveformReady(true);
       } catch {
-        // Fallback: sine envelope waveform
+        // Fallback : waveform sinusoïdale si le JSON est absent
         const bars: number[] = [];
         for (let i = 0; i < 200; i++) {
           const t = i / 200;
@@ -69,7 +53,7 @@ export default function AudioPlayer({ index, title, subtitle, src, isActive, onP
       }
     }
 
-    analyzeAudio();
+    loadWaveform();
     return () => { cancelled = true; };
   }, [src]);
 

@@ -83,7 +83,8 @@
       "Bash(du -sh public/audio/*.wav)",
       "Bash(afconvert --help)",
       "Bash(brew list:*)",
-      "Bash(afconvert \"public/audio/Petit cousin.wav\" /tmp/test.m4a -f m4af -d aac -b 192000)"
+      "Bash(afconvert \"public/audio/Petit cousin.wav\" /tmp/test.m4a -f m4af -d aac -b 192000)",
+      "Bash(node scripts/generate-waveforms.mjs)"
     ]
   }
 }
