@@ -84,7 +84,20 @@
       "Bash(afconvert --help)",
       "Bash(brew list:*)",
       "Bash(afconvert \"public/audio/Petit cousin.wav\" /tmp/test.m4a -f m4af -d aac -b 192000)",
-      "Bash(node scripts/generate-waveforms.mjs)"
+      "Bash(node scripts/generate-waveforms.mjs)",
+      "Bash(afconvert -hf)",
+      "Bash(afconvert \"Je suis charlie.m4a\" \"Je suis charlie.mp3\" -f MPG3 -d .mp3 -b 192000)",
+      "Bash(afconvert \"Je suis charlie.m4a\" /tmp/test.mp3 -f MPG3 -d .mp3)",
+      "Bash(afconvert \"Je suis charlie.m4a\" /tmp/test_inter.wav -f WAVE -d LEI16@44100)",
+      "Bash(afconvert /tmp/test_inter.wav /tmp/test_final.mp3 -f MPG3 -d .mp3)",
+      "Bash(afconvert /tmp/test_inter.wav /tmp/test2.m4a -f mp4f -d .mp3)",
+      "Bash(afconvert /tmp/test_inter.wav /tmp/test3.mp3)",
+      "Bash(npm install:*)",
+      "Bash(sudo npm:*)",
+      "Bash(node -e \"require\\('lamejs'\\); console.log\\('lamejs ok'\\)\")",
+      "Bash(node /tmp/convert_mp3.js)",
+      "Bash(node -e \"const l = require\\('@breezystack/lamejs'\\); console.log\\('ok', typeof l.Mp3Encoder\\)\")",
+      "Bash(du -sh /Users/studiombc/Desktop/studio-mbc/studio-mbc/public/audio/*.mp3)"
     ]
   }
 }

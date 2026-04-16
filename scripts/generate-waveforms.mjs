@@ -18,7 +18,7 @@ const BAR_COUNT = 200;
 
 mkdirSync(OUT_DIR, { recursive: true });
 
-const files = readdirSync(AUDIO_DIR).filter(f => f.endsWith(".m4a"));
+const files = readdirSync(AUDIO_DIR).filter(f => f.endsWith(".mp3"));
 
 for (const file of files) {
   const inputPath = join(AUDIO_DIR, file);
@@ -28,7 +28,7 @@ for (const file of files) {
   console.log(`⟳  ${file}`);
 
   try {
-    // 1. Décoder m4a → WAV PCM 16-bit mono 44100 Hz via afconvert
+    // 1. Décoder mp3 → WAV PCM 16-bit mono 44100 Hz via afconvert
     execSync(
       `afconvert "${inputPath}" "${tmpWav}" -f WAVE -d LEI16@44100 -c 1`,
       { stdio: "pipe" }
