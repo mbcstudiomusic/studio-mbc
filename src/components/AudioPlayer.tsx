@@ -212,7 +212,7 @@ export default function AudioPlayer({ index, title, subtitle, src, isActive, onP
 
   return (
     <div className="ecouter-track" style={{ borderTop: "1px solid var(--line)", padding: "1.75rem 0" }}>
-      <audio ref={audioRef} src={src} preload="metadata" />
+      <audio ref={audioRef} src={src} preload="metadata" controls style={{ width: "100%", marginBottom: "0.5rem" }} />
 
       <div style={{ display: "flex", gap: "2rem", alignItems: "flex-start" }}>
         {/* Track number */}
