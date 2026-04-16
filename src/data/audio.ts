@@ -36,7 +36,7 @@ export async function getAudioTracks(): Promise<AudioTrack[]> {
   if (SHEET_ID && !SHEET_ID.startsWith("REMPLACER")) {
     try {
       const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(url, { next: { revalidate: 300 } });
       if (!res.ok) throw new Error(`Google Sheets fetch failed: ${res.status}`);
       const text = await res.text();
       return parseAudioCSV(text, ",");
